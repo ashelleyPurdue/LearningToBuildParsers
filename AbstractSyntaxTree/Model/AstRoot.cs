@@ -1,9 +1,10 @@
 using System;
+using System.Collections.Generic;
 
 namespace AbstractSyntaxTree
 {
   public class AstRoot
   {
-    public ClassDefinition[] Classes { get; set; }
+    public List<ClassDefinition> Classes { get; set; }
   }
 }
