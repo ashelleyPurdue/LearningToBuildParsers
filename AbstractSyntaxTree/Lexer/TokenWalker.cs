@@ -7,7 +7,7 @@ namespace AbstractSyntaxTree
 {
   public class TokenWalker
   {
-    private IEnumerable<IToken> _stream;
+    private readonly IEnumerable<IToken> _stream;
 
     public TokenWalker(IEnumerable<IToken> tokenStream)
     {
@@ -18,11 +18,10 @@ namespace AbstractSyntaxTree
 
     public IToken Peek() => _stream.First();
 
-    public IToken Consume()
+    public TokenWalker Consume()
     {
-      var result = Peek();
-      _stream = _stream.Skip(1);
-      return result;
+      var stream = _stream.Skip(1);
+      return new TokenWalker(stream);
     }
 
     /// <summary>
@@ -31,10 +30,10 @@ namespace AbstractSyntaxTree
     /// </summary>
     /// <typeparam name="TToken"></typeparam>
     /// <returns></returns>
-    public TToken Consume<TToken>() where TToken : IToken
+    public TokenWalker Consume<TToken>() where TToken : IToken
     {
       Expect<TToken>();
-      return (TToken)Consume();
+      return Consume();
     }
 
     /// <summary>
@@ -89,10 +88,10 @@ namespace AbstractSyntaxTree
     /// </summary>
     /// <param name="keyword"></param>
     /// <returns></returns>
-    public KeywordToken ConsumeKeyword(string keyword)
+    public TokenWalker ConsumeKeyword(string keyword)
     {
       ExpectKeyword(keyword);
-      return (KeywordToken)Consume();
+      return Consume();
     }
   }
 }

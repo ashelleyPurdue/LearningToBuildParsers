@@ -26,7 +26,7 @@ namespace AbstractSyntaxTree
         switch (tokens.Peek())
         {
           case KeywordToken k when k.Content == "class":
-            root.Classes.Add(ParseClass(tokens));
+            root.Classes.Add(ParseClass(tokens, out tokens));
             break;
 
           default: throw new Exception("Unexpected token");
@@ -36,24 +36,28 @@ namespace AbstractSyntaxTree
       return root;
     }
 
-    private ClassDefinition ParseClass(TokenWalker tokens)
+    private ClassDefinition ParseClass(TokenWalker tokens, out TokenWalker rest)
     {
       // Look for the class keyword
-      tokens.ConsumeKeyword("class");
+      tokens = tokens.ConsumeKeyword("class");
+      var classDef = new ClassDefinition();
 
       // Grab the name
-      var classDef = new ClassDefinition();
       classDef.Name = tokens
-        .Consume<WordToken>()
+        .Expect<WordToken>()
         .Content;
+
+      tokens = tokens.Consume();
 
       // TODO: Parse the functions.  For now, just enforce that
       // it's an empty class
-      tokens.Consume<OpenCurlyToken>();
-      tokens.Consume<CloseCurlyToken>();
+      tokens = tokens
+        .Consume<OpenCurlyToken>()
+        .Consume<CloseCurlyToken>();
 
       classDef.Functions = new List<FunctionDefinition>();
 
+      rest = tokens;
       return classDef;
     }
   }
