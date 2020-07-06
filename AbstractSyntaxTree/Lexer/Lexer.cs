@@ -57,6 +57,8 @@ namespace AbstractSyntaxTree
         {
           '{' => new OpenCurlyToken(pos),
           '}' => new CloseCurlyToken(pos),
+          '(' => new OpenParenToken(pos),
+          ')' => new CloseParenToken(pos),
           _ => throw new CompileErrorException(pos, $"Unexpected character '{c}'")
         };
       }

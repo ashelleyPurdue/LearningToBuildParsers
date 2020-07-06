@@ -49,4 +49,28 @@ namespace AbstractSyntaxTree
 
     public override string ToString() => "}";
   }
+
+  public class OpenParenToken : IToken
+  {
+    public CodePos Position { get; private set; }
+
+    public OpenParenToken(CodePos position)
+    {
+      Position = position;
+    }
+
+    public override string ToString() => "(";
+  }
+
+  public class CloseParenToken : IToken
+  {
+    public CodePos Position { get; private set; }
+
+    public CloseParenToken(CodePos position)
+    {
+      Position = position;
+    }
+
+    public override string ToString() => ")";
+  }
 }
