@@ -8,7 +8,8 @@ namespace AbstractSyntaxTree
   {
     private readonly ISet<string> _keywords = new HashSet<string>
     {
-      "class"
+      "class",
+      "function"
     };
 
     public AstRoot Parse(IEnumerable<char> src)
@@ -54,16 +55,60 @@ namespace AbstractSyntaxTree
 
       tokens = tokens.Consume();
 
-      // TODO: Parse the functions.  For now, just enforce that
-      // it's an empty class
+      // Parse the insides of the class
+      classDef.Functions = new List<FunctionDefinition>();
+      tokens = tokens.Consume<OpenCurlyToken>();
+
+      while (!tokens.IsEmpty())
+      {
+        IToken token = tokens.Peek();
+
+        switch (token)
+        {
+          case CloseCurlyToken cc: goto exitClass; // Betcha didn't know C# has "goto".  Mwahahaha!
+
+          case KeywordToken k when k.Content == "function":
+            classDef.Functions.Add(ParseFunction(tokens, out tokens));
+            break;
+
+          default: throw new CompileErrorException(
+            token.Position,
+            $"Unexpected token {token.ToString()}"
+          );
+        }
+      }
+
+      exitClass:
+      rest = tokens.Consume<CloseCurlyToken>();
+      return classDef;
+    }
+
+    private FunctionDefinition ParseFunction(TokenWalker tokens, out TokenWalker rest)
+    {
+      // Look for the function keyword
+      tokens = tokens.ConsumeKeyword("function");
+      var funcDef = new FunctionDefinition();
+
+      // Grab the name
+      funcDef.Name = tokens.Expect<WordToken>().Content;
+      tokens = tokens.Consume();
+
+      // TODO: Parse the parameters.  For now, just enforce
+      // that there are none.
+      tokens = tokens
+        .Consume<OpenParenToken>()
+        .Consume<CloseParenToken>();
+
+      // TODO: Parse the statements.  For now, just enforce that
+      // there are none
       tokens = tokens
         .Consume<OpenCurlyToken>()
         .Consume<CloseCurlyToken>();
 
-      classDef.Functions = new List<FunctionDefinition>();
+      funcDef.Statements = new List<IStatement>();
 
       rest = tokens;
-      return classDef;
+      return funcDef;
     }
   }
 }

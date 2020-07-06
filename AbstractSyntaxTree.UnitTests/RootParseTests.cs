@@ -66,14 +66,48 @@ namespace AbstractSyntaxTree.UnitTests
         "BuzzClass"
       };
 
-      Assert.Equal(expectedNames.Length, actualNames.Length);
-
-      foreach (string name in expectedNames)
-        Assert.Contains(name, actualNames);
+      Utils.AssertEqualIgnoringOrder(expectedNames, actualNames);
 
       // All the classes must be empty
       foreach (var c in root.Classes)
         Assert.Empty(c.Functions);
+    }
+  
+    [Fact]
+    public void It_Can_Parse_Empty_Functions_In_A_Class()
+    {
+      const string src =
+      @"
+        class ThingDoer
+        {
+          function DoThing() { }
+          function DoOtherThing()
+          {
+          }
+        }
+      ";
+
+      string[] expectedFuncNames = new[]
+      {
+        "DoThing",
+        "DoOtherThing"
+      };
+
+      var p = new Parser();
+      var root = p.Parse(src);
+
+      Assert.Single(root.Classes);
+
+      var actualFuncs = root
+        .Classes[0]
+        .Functions;
+
+      // Assert that all of the function names are present, and no others.
+      Utils.AssertEqualIgnoringOrder(expectedFuncNames, actualFuncs.Select(f => f.Name));
+
+      // Assert that they're all empty
+      foreach (var func in actualFuncs)
+        Assert.Empty(func.Statements);
     }
   }
 }
