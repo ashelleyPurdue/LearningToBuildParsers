@@ -23,13 +23,18 @@ namespace AbstractSyntaxTree
 
       while (!tokens.IsEmpty())
       {
-        switch (tokens.Peek())
+        IToken token = tokens.Peek();
+
+        switch (token)
         {
           case KeywordToken k when k.Content == "class":
             root.Classes.Add(ParseClass(tokens, out tokens));
             break;
 
-          default: throw new Exception("Unexpected token");
+          default: throw new CompileErrorException(
+            token.Position, 
+            $"Unexpected token {token.ToString()}"
+          );
         }
       }
       

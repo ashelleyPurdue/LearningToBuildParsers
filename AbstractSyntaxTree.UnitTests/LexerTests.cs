@@ -101,5 +101,29 @@ namespace AbstractSyntaxTree.UnitTests
       );
     }
 
+    
+    [Theory]
+    [InlineData(0, 0, 0, "lineZero")]
+    [InlineData(0, 1, 0, "\nlineOne")]
+    [InlineData(0, 2, 0, "\n\nlineTwo")]
+    [InlineData(1, 2, 0, "\nlineOne\nlineTwo")]
+    [InlineData(1, 0, 8, "wordOne wordTwo")]
+    public void It_Properly_Keeps_Track_Of_The_Line_And_Char_Nums(
+      int tokenNumber,
+      int expectedLine,
+      int expectedChar,
+      string src
+    )
+    {
+      var lexer = new Lexer();
+      IToken[] tokens = lexer
+        .ToTokens(src)
+        .ToArray();
+
+      IToken token = tokens[tokenNumber];
+
+      Assert.Equal(expectedLine, token.Position.LineNumber);
+      Assert.Equal(expectedChar, token.Position.CharNumber);
+    }
   }
 }

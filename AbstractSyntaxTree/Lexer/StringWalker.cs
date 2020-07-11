@@ -7,8 +7,10 @@ namespace AbstractSyntaxTree
 {
   public class StringWalker
   {
+    public CodePos Position => _position;
+
     private IEnumerable<char> _content;
-    private int _charCount = 0;
+    private CodePos _position = new CodePos(0, 0);
 
     public StringWalker(IEnumerable<char> content)
     {
@@ -30,7 +32,7 @@ namespace AbstractSyntaxTree
     public string Consume(int count)
     {
       string result = Peek(count);
-      _charCount += count;
+      IncrementCounters(result);
       _content = _content.Skip(count);
 
       return result;
@@ -39,10 +41,24 @@ namespace AbstractSyntaxTree
     public string ConsumeWhile(Func<char, bool> predicate)
     {
       string result = PeekWhile(predicate);
-      _charCount += result.Length;
+      IncrementCounters(result);
       _content = _content.Skip(result.Length);
 
       return result;
+    }
+
+    private void IncrementCounters(string consumedText)
+    {
+      foreach (char c in consumedText)
+      {
+        _position.CharNumber++;
+
+        if (c == '\n')
+        {
+          _position.CharNumber = 0;
+          _position.LineNumber++;
+        }
+      }
     }
   }
 }

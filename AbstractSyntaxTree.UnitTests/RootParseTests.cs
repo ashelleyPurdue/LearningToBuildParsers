@@ -7,6 +7,25 @@ namespace AbstractSyntaxTree.UnitTests
 {
   public class RootParseTests
   {
+    [Theory]
+    [InlineData(0, 17, "class EmptyClass flabbergast {}")]
+    [InlineData(1, 17, "class EmptyClass {}\nclass OtherClass flabbergast {})")]
+    public void Unexpected_Word_After_Class_Name_Throws_Compile_Error(
+      int expectedLine, 
+      int expectedChar,
+      string src
+    )
+    {
+      var err = Assert.Throws<CompileErrorException>(() =>
+      {
+        var p = new Parser();
+        p.Parse(src);
+      });
+
+      Assert.Equal(expectedLine, err.Position.LineNumber);
+      Assert.Equal(expectedChar, err.Position.CharNumber);
+    }
+
     [Fact]
     public void It_Can_Parse_A_Single_Empty_Class()
     {

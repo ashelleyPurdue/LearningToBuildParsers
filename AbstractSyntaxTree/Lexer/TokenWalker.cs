@@ -54,7 +54,10 @@ namespace AbstractSyntaxTree
       var token = Peek();
 
       if (!(token is TToken correctToken))
-        throw new Exception($@"Expected a {expectedName}, but got a {token.GetType().Name} instead.");
+        throw new CompileErrorException(
+          token.Position,
+          $@"Expected a {expectedName}, but got a {token.GetType().Name} instead."
+        );
 
       return correctToken;
     }
@@ -73,10 +76,16 @@ namespace AbstractSyntaxTree
       var token = Peek();
 
       if (!(token is KeywordToken keywordToken))
-        throw new Exception($@"Expected the keyword ""{keyword}"", but got the token ""{token.ToString()}"" instead.");
+        throw new CompileErrorException(
+          token.Position,
+          $@"Expected the keyword ""{keyword}"", but got the token ""{token.ToString()}"" instead."
+        );
 
       if (keywordToken.Content != keyword)
-        throw new Exception($@"Expected the keyword ""{keyword}"", but got the keyword ""{keywordToken.Content}"" instead.");
+        throw new CompileErrorException(
+          token.Position,
+          $@"Expected the keyword ""{keyword}"", but got the keyword ""{keywordToken.Content}"" instead."
+        );
 
       return keywordToken;
     }

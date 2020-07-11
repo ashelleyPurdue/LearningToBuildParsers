@@ -36,12 +36,13 @@ namespace AbstractSyntaxTree
         // a KeywordToken.
         if (char.IsLetter(c))
         {
+          CodePos p = walker.Position;
           string word = walker.ConsumeWhile(cc => char.IsLetterOrDigit(cc));
 
           if (_keywords.Contains(word))
-            yield return new KeywordToken { Content = word };
+            yield return new KeywordToken(p, word);
           else
-            yield return new WordToken { Content = word };
+            yield return new WordToken(p, word);
 
           continue;
         }
@@ -50,12 +51,13 @@ namespace AbstractSyntaxTree
         // TODO: string tokens
 
         // This must be a single-character token
+        CodePos pos = walker.Position;
         walker.Consume(1);
         yield return c switch
         {
-          '{' => new OpenCurlyToken(),
-          '}' => new CloseCurlyToken(),
-          _ => throw new Exception("Unexpected character")
+          '{' => new OpenCurlyToken(pos),
+          '}' => new CloseCurlyToken(pos),
+          _ => throw new CompileErrorException(pos, $"Unexpected character '{c}'")
         };
       }
     }
