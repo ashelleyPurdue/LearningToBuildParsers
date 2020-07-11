@@ -47,8 +47,18 @@ namespace AbstractSyntaxTree
           continue;
         }
 
+        // Strings begin with a double-quote, and end with the
+        // next non-escaped quote
+        if (c == '"')
+        {
+          CodePos p = walker.Position;
+          string content = walker.ConsumeEscapedString();
+
+          yield return new StringToken(p, content);
+          continue;
+        }
+
         // TODO: number tokens
-        // TODO: string tokens
 
         // This must be a single-character token
         CodePos pos = walker.Position;

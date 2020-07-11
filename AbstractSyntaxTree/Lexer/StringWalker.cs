@@ -59,6 +59,49 @@ namespace AbstractSyntaxTree
       return result;
     }
 
+    public string ConsumeEscapedString()
+    {
+      // Skip the opening quote, after asserting that it is indeed
+      // a quote.
+      char openingQuote = Peek();
+      if (openingQuote != '"')
+        throw new CompileErrorException(Position, "ConsumeEscapedString() called, but it didn't start on a quote.");
+      Consume(1);
+
+      var strContent = new StringBuilder();
+      while (Peek() != '"')
+      {
+        char c = Peek();
+
+        // If it's a backslash, it must be an escape sequence.
+        if (c == '\\')
+        {
+          // Skip the backslash, then use the next char
+          // to determine which character this escape sequence
+          // represents
+          Consume(1);
+          char codeChar = Consume(1)[0];
+          char resultChar = codeChar switch
+          {
+            '\\' => '\\',
+            '"' => '"',
+            'n' => '\n',
+            'r' => '\r',
+            _ => throw new CompileErrorException(Position, $"Invalid escape sequence \\{codeChar}")
+          };
+
+          strContent.Append(resultChar);
+          continue;
+        }
+
+        strContent.Append(Consume(1));
+      }
+
+      // Skip the ending quote
+      Consume(1);
+      return strContent.ToString();
+    }
+
     private void IncrementCounters(string consumedText)
     {
       foreach (char c in consumedText)

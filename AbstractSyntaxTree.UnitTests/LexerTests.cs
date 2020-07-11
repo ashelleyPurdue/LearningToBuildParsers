@@ -101,6 +101,27 @@ namespace AbstractSyntaxTree.UnitTests
       );
     }
 
+    [Theory]
+    [InlineData("hello world", @"""hello world""")]
+
+    // Things should be escapable with backslashes
+    [InlineData(" \n \" \r \\ ", @""" \n \"" \r \\ """)]
+
+    // If there's a token inside the string, it should be ignored.  EVERYTHING
+    // until the closing quote must be considered part of the string
+    [InlineData("{}() 123-_*.", @"""{}() 123-_*.""")] 
+    public void Text_Surrounded_By_Quotes_Becomes_A_String(string expectedStr, string src)
+    {
+      var lexer = new Lexer();
+      IToken token = lexer
+        .ToTokens(src)
+        .First();
+
+      Assert.IsType<StringToken>(token);
+
+      var strTok = (StringToken)token;
+      Assert.Equal(expectedStr, strTok.Content);
+    }
     
     [Theory]
     [InlineData(0, 0, 0, "lineZero")]

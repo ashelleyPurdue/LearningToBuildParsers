@@ -1,10 +1,25 @@
 using System;
 
+// TODO: There's some copy-pasta in here.  Refactor somehow.
 namespace AbstractSyntaxTree
 {
   public interface IToken 
   {
     CodePos Position { get; }
+  }
+
+  public class StringToken : IToken
+  {
+    public CodePos Position { get; private set; }
+    public string Content { get; private set; }
+
+    public StringToken(CodePos position, string content)
+    {
+      Position = position;
+      Content = content;
+    }
+
+    public override string ToString() => Content;
   }
 
   public class WordToken : IToken
