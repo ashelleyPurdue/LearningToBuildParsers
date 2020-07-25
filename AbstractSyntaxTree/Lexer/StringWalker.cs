@@ -21,6 +21,12 @@ namespace AbstractSyntaxTree
 
     public char Peek() => _content.First();
 
+    /// <summary>
+    /// Returns the next n characters without
+    /// advancing the line/column counters.
+    /// </summary>
+    /// <param name="count"></param>
+    /// <returns></returns>
     public string Peek(int count) => _content
       .Take(count)
       .AsString();
@@ -29,6 +35,12 @@ namespace AbstractSyntaxTree
       .TakeWhile(predicate)
       .AsString();
 
+    /// <summary>
+    /// Returns the next n characters and advances the
+    /// line/column counters
+    /// </summary>
+    /// <param name="count"></param>
+    /// <returns></returns>
     public string Consume(int count)
     {
       string result = Peek(count);
