@@ -14,7 +14,7 @@ namespace AbstractSyntaxTree
       _keywords = keywords ?? new HashSet<string>();
     }
 
-    public IEnumerable<IToken> ToTokens(IEnumerable<char> src)
+    public IEnumerable<Token> ToTokens(IEnumerable<char> src)
     {
       var walker = new StringWalker(src);
       while (!walker.IsEmpty())
@@ -40,9 +40,9 @@ namespace AbstractSyntaxTree
           string word = walker.ConsumeWhile(cc => char.IsLetterOrDigit(cc));
 
           if (_keywords.Contains(word))
-            yield return new KeywordToken(p, word);
+            yield return new Token(p, TokenType.Keyword, word);
           else
-            yield return new WordToken(p, word);
+            yield return new Token(p, TokenType.Word, word);
 
           continue;
         }
@@ -54,23 +54,28 @@ namespace AbstractSyntaxTree
           CodePos p = walker.Position;
           string content = walker.ConsumeEscapedString();
 
-          yield return new StringToken(p, content);
+          yield return new Token(p, TokenType.String, content);
           continue;
         }
 
         // TODO: number tokens
 
-        // This must be a single-character token
+        // TODO: multi-character symbol tokens
+
+        // This must be a single-character symbol token
         CodePos pos = walker.Position;
         walker.Consume(1);
-        yield return c switch
+        var allowedSymbols = new[]
         {
-          '{' => new OpenCurlyToken(pos),
-          '}' => new CloseCurlyToken(pos),
-          '(' => new OpenParenToken(pos),
-          ')' => new CloseParenToken(pos),
-          _ => throw new CompileErrorException(pos, $"Unexpected character '{c}'")
+          '{',
+          '}',
+          '(',
+          ')'
         };
+        if (!allowedSymbols.Contains(c))
+          throw new CompileErrorException(pos, $"Unexpected character '{c}'");
+
+        yield return new Token(pos, TokenType.Symbol, "" + c);
       }
     }
   }

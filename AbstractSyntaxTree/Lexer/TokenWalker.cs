@@ -7,16 +7,16 @@ namespace AbstractSyntaxTree
 {
   public class TokenWalker
   {
-    private readonly IEnumerable<IToken> _stream;
+    private readonly IEnumerable<Token> _stream;
 
-    public TokenWalker(IEnumerable<IToken> tokenStream)
+    public TokenWalker(IEnumerable<Token> tokenStream)
     {
       _stream = tokenStream;
     }
 
     public bool IsEmpty() => !_stream.Any();
 
-    public IToken Peek() => _stream.First();
+    public Token Peek() => _stream.First();
 
     public TokenWalker Consume()
     {
@@ -30,9 +30,9 @@ namespace AbstractSyntaxTree
     /// </summary>
     /// <typeparam name="TToken"></typeparam>
     /// <returns></returns>
-    public TokenWalker Consume<TToken>() where TToken : IToken
+    public TokenWalker Consume(TokenType type)
     {
-      Expect<TToken>();
+      Expect(type);
       return Consume();
     }
 
@@ -44,22 +44,20 @@ namespace AbstractSyntaxTree
     /// </summary>
     /// <typeparam name="TToken"></typeparam>
     /// <returns></returns>
-    public TToken Expect<TToken>() where TToken : IToken
+    public Token Expect(TokenType type)
     {
-      string expectedName = typeof(TToken).Name;
-
       if (IsEmpty())
-        throw new Exception($@"Expected a {expectedName}, but reached the end of the file.");
+        throw new Exception($@"Expected a {type}, but reached the end of the file.");
 
       var token = Peek();
 
-      if (!(token is TToken correctToken))
+      if (token.Type != type)
         throw new CompileErrorException(
           token.Position,
-          $@"Expected a {expectedName}, but got a {token.GetType().Name} instead."
+          $@"Expected a {type}, but got a {token.Type} instead."
         );
 
-      return correctToken;
+      return token;
     }
 
     /// <summary>
@@ -68,26 +66,42 @@ namespace AbstractSyntaxTree
     /// Throws an error if it is not.
     /// </summary>
     /// <returns></returns>
-    public KeywordToken ExpectKeyword(string keyword)
+    public Token ExpectKeyword(string keyword)
     {
       if (IsEmpty())
         throw new Exception($@"Expected the keyword ""{keyword}"", but reached the end of the file.");
 
       var token = Peek();
 
-      if (!(token is KeywordToken keywordToken))
+      if (token.Type != TokenType.Keyword)
         throw new CompileErrorException(
           token.Position,
-          $@"Expected the keyword ""{keyword}"", but got the token ""{token.ToString()}"" instead."
+          $@"Expected the keyword ""{keyword}"", but got the {token.Type} ""{token.Content}"" instead."
         );
 
-      if (keywordToken.Content != keyword)
+      if (token.Content != keyword)
         throw new CompileErrorException(
           token.Position,
-          $@"Expected the keyword ""{keyword}"", but got the keyword ""{keywordToken.Content}"" instead."
+          $@"Expected the keyword ""{keyword}"", but got the keyword ""{token.Content}"" instead."
         );
 
-      return keywordToken;
+      return token;
+    }
+
+    public Token ExpectSymbol(string symbol)
+    {
+      if (IsEmpty())
+        throw new Exception($@"Expected the symbol ""{symbol}"", but reached the end of file.");
+
+      var token = Peek();
+
+      if (token.Type != TokenType.Symbol)
+        throw new CompileErrorException(
+          token.Position,
+          $@"Expected the symbol ""{symbol}"", but got the {token.Type} {token.Content}."
+        );
+
+      return token;
     }
 
     /// <summary>
@@ -100,6 +114,12 @@ namespace AbstractSyntaxTree
     public TokenWalker ConsumeKeyword(string keyword)
     {
       ExpectKeyword(keyword);
+      return Consume();
+    }
+
+    public TokenWalker ConsumeSymbol(string symbol)
+    {
+      ExpectSymbol(symbol);
       return Consume();
     }
   }

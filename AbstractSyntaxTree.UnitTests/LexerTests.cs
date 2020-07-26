@@ -8,11 +8,11 @@ namespace AbstractSyntaxTree.UnitTests
 {
   public class LexerTests
   {
-    private void AssertTokenTypes(string src, params Type[] expectedTypes)
+    private void AssertTokenTypes(string src, params TokenType[] expectedTypes)
     {
       var lexer = new Lexer();
       var actualTypes = RunLexer(src)
-        .Select(t => t.GetType())
+        .Select(t => t.Type)
         .ToArray();
 
       Assert.Equal(expectedTypes, actualTypes);
@@ -26,12 +26,13 @@ namespace AbstractSyntaxTree.UnitTests
     [InlineData("foo \nbar", "foo", "bar")]
     public void It_Can_Parse_Words_And_Ignore_Whitespace(string src, params string[] expectedTokens)
     {
-      IToken[] tokens = RunLexer(src);
+      Token[] tokens = RunLexer(src);
       Assert.Equal(expectedTokens.Length, tokens.Length);
       
       for (int i = 0; i < expectedTokens.Length; i++)
       {
-        var word = (WordToken)tokens[i];
+        var word = tokens[i];
+        Assert.Equal(TokenType.Word, word.Type);
         Assert.Equal(expectedTokens[i], word.Content);
       }
     }
@@ -46,17 +47,17 @@ namespace AbstractSyntaxTree.UnitTests
       };
       string src = "foo kFoo kBar bar";
 
-      var expectedTokens = new (Type type, string content)[]
+      var expectedTokens = new (TokenType type, string content)[]
       {
-        (typeof(WordToken), "foo"),
-        (typeof(KeywordToken), "kFoo"),
-        (typeof(KeywordToken), "kBar"),
-        (typeof(WordToken), "bar")
+        (TokenType.Word, "foo"),
+        (TokenType.Keyword, "kFoo"),
+        (TokenType.Keyword, "kBar"),
+        (TokenType.Word, "bar")
       };
 
       // Generate tokens from the src
       var lexer = new Lexer(keywords);
-      IToken[] tokens = lexer
+      Token[] tokens = lexer
         .ToTokens(src)
         .ToArray();
 
@@ -66,10 +67,10 @@ namespace AbstractSyntaxTree.UnitTests
 
       for(int i = 0; i < expectedTokens.Length; i++)
       {
-        var actual = (WordToken)tokens[i];
+        var actual = tokens[i];
         var expected = expectedTokens[i];
 
-        Assert.Equal(expected.type, actual.GetType());
+        Assert.Equal(expected.type, actual.Type);
         Assert.Equal(expected.content, actual.Content);
       }
     }
@@ -77,23 +78,25 @@ namespace AbstractSyntaxTree.UnitTests
     [Fact]
     public void It_Can_Recognize_Open_And_Close_Curly_Brackets()
     {
-      AssertTokenTypes(" { } foo ",
-        typeof(OpenCurlyToken),
-        typeof(CloseCurlyToken),
-        typeof(WordToken)
-      );
+      var tokens = RunLexer(" { } foo ");
+      new TokenExpecter(tokens)
+        .FollowedBy(TokenType.Symbol, "{")
+        .FollowedBy(TokenType.Symbol, "}")
+        .FollowedBy(TokenType.Word, "foo")
+        .AndNoOthers();
     }
 
     [Fact]
     public void Words_And_Curly_Brackets_Dont_Need_Whitespace_Between()
     {
-      AssertTokenTypes("{}fo{o",
-        typeof(OpenCurlyToken),
-        typeof(CloseCurlyToken),
-        typeof(WordToken),
-        typeof(OpenCurlyToken),
-        typeof(WordToken)
-      );
+      var tokens = RunLexer("{}fo{o");
+      new TokenExpecter(tokens)
+        .FollowedBy(TokenType.Symbol, "{")
+        .FollowedBy(TokenType.Symbol, "}")
+        .FollowedBy(TokenType.Word, "fo")
+        .FollowedBy(TokenType.Symbol, "{")
+        .FollowedBy(TokenType.Word, "o")
+        .AndNoOthers();
     }
 
     [Theory]
@@ -107,11 +110,8 @@ namespace AbstractSyntaxTree.UnitTests
     [InlineData("{}() 123-_*.", @"""{}() 123-_*.""")] 
     public void Text_Surrounded_By_Quotes_Becomes_A_String(string expectedStr, string src)
     {
-      IToken token = RunLexer(src)[0];
-      Assert.IsType<StringToken>(token);
-
-      var strTok = (StringToken)token;
-      Assert.Equal(expectedStr, strTok.Content);
+      Token token = RunLexer(src)[0];
+      Assert.Equal(expectedStr, token.Content);
     }
     
     [Theory]
@@ -127,12 +127,12 @@ namespace AbstractSyntaxTree.UnitTests
       string src
     )
     {
-      IToken token = RunLexer(src)[tokenNumber];
+      Token token = RunLexer(src)[tokenNumber];
       Assert.Equal(expectedLine, token.Position.LineNumber);
       Assert.Equal(expectedChar, token.Position.CharNumber);
     }
   
-    private IToken[] RunLexer(string src)
+    private Token[] RunLexer(string src)
     {
       var lexer = new Lexer();
       return lexer

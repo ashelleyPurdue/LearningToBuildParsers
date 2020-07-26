@@ -24,11 +24,11 @@ namespace AbstractSyntaxTree
 
       while (!tokens.IsEmpty())
       {
-        IToken token = tokens.Peek();
+        Token token = tokens.Peek();
 
-        switch (token)
+        switch (token.Type)
         {
-          case KeywordToken k when k.Content == "class":
+          case TokenType.Keyword when token.Content == "class":
             root.Classes.Add(ParseClass(tokens, out tokens));
             break;
 
@@ -50,36 +50,37 @@ namespace AbstractSyntaxTree
 
       // Grab the name
       classDef.Name = tokens
-        .Expect<WordToken>()
+        .Expect(TokenType.Word)
         .Content;
 
       tokens = tokens.Consume();
 
       // Parse the insides of the class
       classDef.Functions = new List<FunctionDefinition>();
-      tokens = tokens.Consume<OpenCurlyToken>();
+      tokens = tokens.ConsumeSymbol("{");
 
       while (!tokens.IsEmpty())
       {
-        IToken token = tokens.Peek();
+        Token token = tokens.Peek();
 
-        switch (token)
+        switch (token.Type)
         {
-          case CloseCurlyToken cc: goto exitClass; // Betcha didn't know C# has "goto".  Mwahahaha!
+          case TokenType.Symbol when token.Content == "}": 
+            goto exitClass; // Betcha didn't know C# has "goto".  Mwahahaha!
 
-          case KeywordToken k when k.Content == "function":
+          case TokenType.Keyword when token.Content == "function":
             classDef.Functions.Add(ParseFunction(tokens, out tokens));
             break;
 
           default: throw new CompileErrorException(
             token.Position,
-            $"Unexpected token {token.ToString()}"
+            $"Unexpected token {token.Content}"
           );
         }
       }
 
       exitClass:
-      rest = tokens.Consume<CloseCurlyToken>();
+      rest = tokens.ConsumeSymbol("}");
       return classDef;
     }
 
@@ -90,20 +91,20 @@ namespace AbstractSyntaxTree
       var funcDef = new FunctionDefinition();
 
       // Grab the name
-      funcDef.Name = tokens.Expect<WordToken>().Content;
+      funcDef.Name = tokens.Expect(TokenType.Word).Content;
       tokens = tokens.Consume();
 
       // TODO: Parse the parameters.  For now, just enforce
       // that there are none.
       tokens = tokens
-        .Consume<OpenParenToken>()
-        .Consume<CloseParenToken>();
+        .ConsumeSymbol("(")
+        .ConsumeSymbol(")");
 
       // TODO: Parse the statements.  For now, just enforce that
       // there are none
       tokens = tokens
-        .Consume<OpenCurlyToken>()
-        .Consume<CloseCurlyToken>();
+        .ConsumeSymbol("{")
+        .ConsumeSymbol("}");
 
       funcDef.Statements = new List<IStatement>();
 
