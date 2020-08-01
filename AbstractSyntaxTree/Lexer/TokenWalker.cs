@@ -5,6 +5,9 @@ using System.Text;
 
 namespace AbstractSyntaxTree
 {
+  /// <summary>
+  /// Unlike StringWalker, this class is IMMUTABLE
+  /// </summary>
   public class TokenWalker
   {
     private readonly IEnumerable<Token> _stream;

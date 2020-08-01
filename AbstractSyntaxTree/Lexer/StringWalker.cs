@@ -5,6 +5,9 @@ using System.Text;
 
 namespace AbstractSyntaxTree
 {
+  /// <summary>
+  /// Unlike TokenWalker, this class is MUTABLE.
+  /// </summary>
   public class StringWalker
   {
     public CodePos Position => _position;
