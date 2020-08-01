@@ -86,6 +86,77 @@ namespace AbstractSyntaxTree.UnitTests
         .AndNoOthers();
     }
 
+    [Theory]
+    [InlineData("1234")]
+    [InlineData("1.23")]
+    [InlineData("-1.2")]
+    [InlineData("-1")]
+    public void It_Can_Recognize_Numbers(string src)
+    {
+      var tokens = RunLexer(src);
+      new TokenExpecter(tokens)
+        .FollowedBy(TokenType.Number)
+        .AndNoOthers();
+    }
+
+    [Fact]
+    public void It_Can_Disambiguate_Between_Subtraction_And_Negative_Numbers()
+    {
+
+      new TokenExpecter(RunLexer("-"))
+        .FollowedBy(TokenType.Symbol, "-")
+        .AndNoOthers();
+
+      new TokenExpecter(RunLexer("-32"))
+        .FollowedBy(TokenType.Number, "-32")
+        .AndNoOthers();
+
+      new TokenExpecter(RunLexer("32 - 32"))
+        .FollowedBy(TokenType.Number, "32")
+        .FollowedBy(TokenType.Symbol, "-")
+        .FollowedBy(TokenType.Number, "32")
+        .AndNoOthers();
+
+      new TokenExpecter(RunLexer("32-32"))
+        .FollowedBy(TokenType.Number, "32")
+        .FollowedBy(TokenType.Symbol, "-")
+        .FollowedBy(TokenType.Number, "32")
+        .AndNoOthers();
+
+      new TokenExpecter(RunLexer("32 - -32"))
+        .FollowedBy(TokenType.Number, "32")
+        .FollowedBy(TokenType.Symbol, "-")
+        .FollowedBy(TokenType.Number, "-32")
+        .AndNoOthers();
+
+      new TokenExpecter(RunLexer("foo-32"))
+        .FollowedBy(TokenType.Word, "foo")
+        .FollowedBy(TokenType.Symbol, "-")
+        .FollowedBy(TokenType.Number, "32")
+        .AndNoOthers();
+
+      new TokenExpecter(RunLexer("32-foo-32 - -32"))
+        .FollowedBy(TokenType.Number, "32")
+        .FollowedBy(TokenType.Symbol, "-")
+        .FollowedBy(TokenType.Word, "foo")
+        .FollowedBy(TokenType.Symbol, "-")
+        .FollowedBy(TokenType.Number, "32")
+        .FollowedBy(TokenType.Symbol, "-")
+        .FollowedBy(TokenType.Number, "-32")
+        .AndNoOthers();
+    }
+
+    [Fact]
+    public void Words_Can_Have_Numbers_In_The_Middle_But_Not_At_The_Start()
+    {
+      string src = "123foo123";
+      var tokens = RunLexer(src);
+      new TokenExpecter(tokens)
+        .FollowedBy(TokenType.Number, "123")
+        .FollowedBy(TokenType.Word, "foo123")
+        .AndNoOthers();
+    }
+
     [Fact]
     public void Words_And_Curly_Brackets_Dont_Need_Whitespace_Between()
     {

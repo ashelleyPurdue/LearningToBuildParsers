@@ -8,6 +8,7 @@ namespace AbstractSyntaxTree
     Word,
     Keyword,
     String,
+    Number,
     Symbol,
   }
   
