@@ -109,5 +109,47 @@ namespace AbstractSyntaxTree.UnitTests
       foreach (var func in actualFuncs)
         Assert.Empty(func.Statements);
     }
+
+    [Fact]
+    public void It_Can_Parse_Simple_Variable_Decls_In_A_Function()
+    {
+      const string src =
+      @"
+        class ThingDoer
+        {
+          function DoThing() 
+          {
+            let fooVar;
+            let barVar;
+          }
+        }
+      ";
+
+      string[] expectedVarNames = new[]
+      {
+        "fooVar",
+        "barVar"
+      };
+
+      var p = new Parser();
+      var root = p.Parse(src);
+
+      var statements = root
+        .Classes[0]
+        .Functions[0]
+        .Statements;
+
+      // The order of the statements IS important this time around.
+      for(int i = 0; i < expectedVarNames.Length; i++)
+      {
+        var statement = statements[i];
+        var expectedName = expectedVarNames[i];
+
+        Assert.IsAssignableFrom<VariableDeclarationStatement>(statement);
+        var letStatement = (VariableDeclarationStatement)statement;
+
+        Assert.Equal(expectedName, letStatement.Name);
+      }
+    }
   }
 }
