@@ -102,6 +102,10 @@ namespace AbstractSyntaxTree
         .ConsumeSymbol(")");
 
       // Parse the statements.
+      var rules = new IParseRule[]
+      {
+
+      };
       tokens = tokens.ConsumeSymbol("{");
       funcDef.Statements = new List<IStatement>();
 
