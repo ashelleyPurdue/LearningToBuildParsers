@@ -9,7 +9,8 @@ namespace AbstractSyntaxTree
     private readonly ISet<string> _keywords = new HashSet<string>
     {
       "class",
-      "function"
+      "function",
+      "let"
     };
 
     public AstRoot Parse(IEnumerable<char> src)
@@ -100,16 +101,50 @@ namespace AbstractSyntaxTree
         .ConsumeSymbol("(")
         .ConsumeSymbol(")");
 
-      // TODO: Parse the statements.  For now, just enforce that
-      // there are none
-      tokens = tokens
-        .ConsumeSymbol("{")
-        .ConsumeSymbol("}");
-
+      // Parse the statements.
+      tokens = tokens.ConsumeSymbol("{");
       funcDef.Statements = new List<IStatement>();
 
+      while (!tokens.IsEmpty())
+      {
+        var token = tokens.Peek();
+        switch (token.Type)
+        {
+          case TokenType.Symbol when token.Content == "}":
+            goto exitFunc;
+
+          case TokenType.Keyword when token.Content == "let":
+            funcDef.Statements.Add(ParseLetStatement(tokens, out tokens));
+            break;
+
+          default: throw new CompileErrorException(
+            token.Position,
+            $"Unexpected token {token.Content}"
+          );
+        }
+      }
+
+      exitFunc:
+      tokens = tokens.ConsumeSymbol("}");
       rest = tokens;
       return funcDef;
+    }
+
+    private LetStatement ParseLetStatement(TokenWalker tokens, out TokenWalker rest)
+    {
+      tokens = tokens.ConsumeKeyword("let");
+      
+      var letStatement = new LetStatement();
+
+      letStatement.Name = tokens.Expect(TokenType.Word).Content;
+      tokens = tokens.Consume();
+
+      // TODO: Optionally expect an equals sign and an expression
+      // for the initial value
+
+      tokens = tokens.ConsumeSymbol(";");
+      rest = tokens;
+      return letStatement;
     }
   }
 }
