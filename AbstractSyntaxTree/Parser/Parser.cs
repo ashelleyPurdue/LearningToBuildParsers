@@ -19,27 +19,16 @@ namespace AbstractSyntaxTree
       var tokens = new TokenWalker(lexer.ToTokens(src));
 
       var root = new AstRoot();
-
-      // Parse all the classes
       root.Classes = new List<ClassDefinition>();
 
-      while (!tokens.IsEmpty())
-      {
-        Token token = tokens.Peek();
-
-        switch (token.Type)
-        {
-          case TokenType.Keyword when token.Content == "class":
-            root.Classes.Add(ParseClass(tokens, out tokens));
-            break;
-
-          default: throw new CompileErrorException(
-            token.Position, 
-            $"Unexpected token {token.ToString()}"
-          );
-        }
-      }
       
+      var rules = new RuleParser();
+      rules.FinishesWhen(t => t.IsEmpty());
+      rules.AddRule(new ClassParseRule(), root.Classes.Add);
+
+      // Parse all the classes
+      tokens = rules.ParseToCompletion(tokens);
+
       return root;
     }
 
