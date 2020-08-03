@@ -13,7 +13,8 @@ namespace AbstractSyntaxTree
       '}',
       '(',
       ')',
-      '-'
+      '-',
+      ';'
     };
 
     public bool IsStartOfToken(StringWalker w)
