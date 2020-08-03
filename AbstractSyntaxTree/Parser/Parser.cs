@@ -60,57 +60,12 @@ namespace AbstractSyntaxTree
       classDef.Functions = new List<FunctionDefinition>();
       tokens = tokens.ConsumeSymbol("{");
 
-      while (!tokens.IsEmpty())
-      {
-        Token token = tokens.Peek();
-
-        switch (token.Type)
-        {
-          case TokenType.Symbol when token.Content == "}": 
-            goto exitClass; // Betcha didn't know C# has "goto".  Mwahahaha!
-
-          case TokenType.Keyword when token.Content == "function":
-            classDef.Functions.Add(ParseFunction(tokens, out tokens));
-            break;
-
-          default: throw new CompileErrorException(
-            token.Position,
-            $"Unexpected token {token.Content}"
-          );
-        }
-      }
-
-      exitClass:
-      rest = tokens.ConsumeSymbol("}");
-      return classDef;
-    }
-
-    private FunctionDefinition ParseFunction(TokenWalker tokens, out TokenWalker rest)
-    {
-      // Look for the function keyword
-      tokens = tokens.ConsumeKeyword("function");
-      var funcDef = new FunctionDefinition();
-
-      // Grab the name
-      funcDef.Name = tokens.Expect(TokenType.Word).Content;
-      tokens = tokens.Consume();
-
-      // TODO: Parse the parameters.  For now, just enforce
-      // that there are none.
-      tokens = tokens
-        .ConsumeSymbol("(")
-        .ConsumeSymbol(")");
-
-      // Parse the statements.
       var rules = new RuleParser();
-      rules.AddRule(new LetStatementRule(), (s, rest) =>
+      rules.AddRule(new FunctionDefinitionRule(), (funcDef, rest) =>
       {
-        funcDef.Statements.Add(s);
+        classDef.Functions.Add(funcDef);
         tokens = rest;
       });
-
-      tokens = tokens.ConsumeSymbol("{");
-      funcDef.Statements = new List<IStatement>();
 
       while (!tokens.IsEmpty())
       {
@@ -132,24 +87,7 @@ namespace AbstractSyntaxTree
 
       tokens = tokens.ConsumeSymbol("}");
       rest = tokens;
-      return funcDef;
-    }
-
-    private LetStatement ParseLetStatement(TokenWalker tokens, out TokenWalker rest)
-    {
-      tokens = tokens.ConsumeKeyword("let");
-      
-      var letStatement = new LetStatement();
-
-      letStatement.Name = tokens.Expect(TokenType.Word).Content;
-      tokens = tokens.Consume();
-
-      // TODO: Optionally expect an equals sign and an expression
-      // for the initial value
-
-      tokens = tokens.ConsumeSymbol(";");
-      rest = tokens;
-      return letStatement;
+      return classDef;
     }
   }
 }

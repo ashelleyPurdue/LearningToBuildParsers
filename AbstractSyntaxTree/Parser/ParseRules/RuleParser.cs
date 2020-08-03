@@ -40,9 +40,9 @@ namespace AbstractSyntaxTree
           continue;
 
         dynamic dynamicRule = rule;
-        dynamic result = dynamicRule.Parse(walker);
-        dynamic node = result.node;
-        TokenWalker rest = result.rest;
+        dynamic result = dynamicRule.ParseNode(walker);
+        dynamic node = result.Item1;
+        TokenWalker rest = result.Item2;
 
         _handlers[rule]?.Invoke(node, rest);
         return true;
