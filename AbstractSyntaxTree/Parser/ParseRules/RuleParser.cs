@@ -25,7 +25,13 @@ namespace AbstractSyntaxTree
       }
     }
 
-    public void NextNode(TokenWalker walker)
+    /// <summary>
+    /// Invokes the callback of the first rule that matches.
+    /// Returns true if anything matched, otherwise false.
+    /// </summary>
+    /// <param name="walker"></param>
+    /// <returns></returns>
+    public bool NextNode(TokenWalker walker)
     {
       // Find the first rule that matches and invoke its callback
       foreach (var rule in _rules)
@@ -39,8 +45,10 @@ namespace AbstractSyntaxTree
         TokenWalker rest = result.rest;
 
         _handlers[rule]?.Invoke(node, rest);
-        break;
+        return true;
       }
+
+      return false;
     }
   }
 }

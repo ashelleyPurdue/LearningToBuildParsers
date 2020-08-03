@@ -102,33 +102,34 @@ namespace AbstractSyntaxTree
         .ConsumeSymbol(")");
 
       // Parse the statements.
-      var rules = new IParseRule[]
+      var rules = new RuleParser();
+      rules.AddRule(new LetStatementRule(), (s, rest) =>
       {
+        funcDef.Statements.Add(s);
+        tokens = rest;
+      });
 
-      };
       tokens = tokens.ConsumeSymbol("{");
       funcDef.Statements = new List<IStatement>();
 
       while (!tokens.IsEmpty())
       {
         var token = tokens.Peek();
-        switch (token.Type)
+
+        if (token.Type == TokenType.Symbol && token.Content == "}")
+          break;
+
+        bool anyMatches = rules.NextNode(tokens);
+
+        if (!anyMatches)
         {
-          case TokenType.Symbol when token.Content == "}":
-            goto exitFunc;
-
-          case TokenType.Keyword when token.Content == "let":
-            funcDef.Statements.Add(ParseLetStatement(tokens, out tokens));
-            break;
-
-          default: throw new CompileErrorException(
+          throw new CompileErrorException(
             token.Position,
             $"Unexpected token {token.Content}"
           );
         }
       }
 
-      exitFunc:
       tokens = tokens.ConsumeSymbol("}");
       rest = tokens;
       return funcDef;
