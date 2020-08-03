@@ -61,29 +61,10 @@ namespace AbstractSyntaxTree
       tokens = tokens.ConsumeSymbol("{");
 
       var rules = new RuleParser();
-      rules.AddRule(new FunctionDefinitionRule(), (funcDef, rest) =>
-      {
-        classDef.Functions.Add(funcDef);
-        tokens = rest;
-      });
+      rules.FinishesWhen(t => t.Peek().Content == "}");
+      rules.AddRule(new FunctionDefinitionRule(), classDef.Functions.Add);
 
-      while (!tokens.IsEmpty())
-      {
-        var token = tokens.Peek();
-
-        if (token.Type == TokenType.Symbol && token.Content == "}")
-          break;
-
-        bool anyMatches = rules.NextNode(tokens);
-
-        if (!anyMatches)
-        {
-          throw new CompileErrorException(
-            token.Position,
-            $"Unexpected token {token.Content}"
-          );
-        }
-      }
+      tokens = rules.ParseToCompletion(tokens);
 
       tokens = tokens.ConsumeSymbol("}");
       rest = tokens;

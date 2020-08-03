@@ -6,23 +6,56 @@ namespace AbstractSyntaxTree
 {
   public class RuleParser
   {
-    public delegate void NodeParsedHandler<TNode>(TNode node, TokenWalker rest);
-    private delegate void NodeParsedHandler(object node, TokenWalker rest);
+    public delegate bool IsNodeFinishedPredicate(TokenWalker walker);
+    public delegate void ChildNodeParsedHandler<TNode>(TNode node);
+    private delegate void ChildNodeParsedHandler(object node);
 
     private readonly List<IParseRule> _rules = new List<IParseRule>();
-    private readonly Dictionary<IParseRule, NodeParsedHandler> _handlers
-      = new Dictionary<IParseRule, NodeParsedHandler>();
+    private readonly Dictionary<IParseRule, ChildNodeParsedHandler> _handlers
+      = new Dictionary<IParseRule, ChildNodeParsedHandler>();
 
-    public void AddRule<TNode>(IParseRule<TNode> rule, NodeParsedHandler<TNode> handler)
+    private IsNodeFinishedPredicate _nodeFinished;
+
+    public void AddRule<TNode>(IParseRule<TNode> rule, ChildNodeParsedHandler<TNode> handler)
     {
       _rules.Add(rule);
       _handlers.Add(rule, WrappedHandler);
 
-      void WrappedHandler(object node, TokenWalker rest)
+      void WrappedHandler(object node)
       {
         var castedNode = (TNode)node;
-        handler(castedNode, rest);
+        handler(castedNode);
       }
+    }
+
+    public void FinishesWhen(IsNodeFinishedPredicate nodeFinished)
+    {
+      _nodeFinished = nodeFinished;
+    }
+
+    public TokenWalker ParseToCompletion(TokenWalker tokens)
+    {
+      while(!tokens.IsEmpty())
+      {
+        var token = tokens.Peek();
+
+        if (_nodeFinished(tokens))
+          break;
+
+        var result = NextNode(tokens);
+
+        if (!result.success)
+        {
+          throw new CompileErrorException(
+            token.Position,
+            $"Unexpected token {token.Content}"
+          );
+        }
+
+        tokens = result.rest;
+      }
+
+      return tokens;
     }
 
     /// <summary>
@@ -31,7 +64,7 @@ namespace AbstractSyntaxTree
     /// </summary>
     /// <param name="walker"></param>
     /// <returns></returns>
-    public bool NextNode(TokenWalker walker)
+    private (bool success, TokenWalker rest) NextNode(TokenWalker walker)
     {
       // Find the first rule that matches and invoke its callback
       foreach (var rule in _rules)
@@ -44,11 +77,11 @@ namespace AbstractSyntaxTree
         dynamic node = result.Item1;
         TokenWalker rest = result.Item2;
 
-        _handlers[rule]?.Invoke(node, rest);
-        return true;
+        _handlers[rule]?.Invoke(node);
+        return (true, rest);
       }
 
-      return false;
+      return (false, walker);
     }
   }
 }

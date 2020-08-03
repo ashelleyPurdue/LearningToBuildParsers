@@ -29,33 +29,14 @@ namespace AbstractSyntaxTree
         .ConsumeSymbol(")");
 
       // Parse the statements.
-      var rules = new RuleParser();
-      rules.AddRule(new LetStatementRule(), (s, rest) =>
-      {
-        funcDef.Statements.Add(s);
-        tokens = rest;
-      });
-
       tokens = tokens.ConsumeSymbol("{");
       funcDef.Statements = new List<IStatement>();
 
-      while (!tokens.IsEmpty())
-      {
-        var token = tokens.Peek();
+      var rules = new RuleParser();
+      rules.FinishesWhen(t => t.Peek().Content == "}");
+      rules.AddRule(new LetStatementRule(), funcDef.Statements.Add);
 
-        if (token.Type == TokenType.Symbol && token.Content == "}")
-          break;
-
-        bool anyMatches = rules.NextNode(tokens);
-
-        if (!anyMatches)
-        {
-          throw new CompileErrorException(
-            token.Position,
-            $"Unexpected token {token.Content}"
-          );
-        }
-      }
+      tokens = rules.ParseToCompletion(tokens);
 
       tokens = tokens.ConsumeSymbol("}");
       return (funcDef, tokens);
