@@ -17,19 +17,12 @@ namespace AbstractSyntaxTree
       var classDef = new ClassDefinition();
 
       // Expect the class keyword
-      Token classKeyword = tokens.First();
+      yield return tokens.ExpectKeyword("class", classDef);
       tokens = tokens.Skip(1);
-      if (classKeyword.Content != "class")
-      {
-        string msg = $"Expected class keyword, but got {classKeyword.Content}";
-        throw new CompileErrorException(classKeyword.Position, msg);
-      }
-      yield return NextTokenResult.GoodSoFar(classDef);
 
       // Grab the name
       Token classNameWord = tokens.First();
-      tokens = tokens.Skip(1);
-
+      
       if (classNameWord.Type != TokenType.Word)
       {
         string msg = $"Expected a word token for the name, but got a {classNameWord.Type} {classNameWord.Content}";
@@ -37,26 +30,16 @@ namespace AbstractSyntaxTree
       }
       classDef.Name = classNameWord.Content;
       yield return NextTokenResult.GoodSoFar(classDef);
+      tokens = tokens.Skip(1);
 
       // Expect an opening curly bracket
-      Token openCurly = tokens.First();
-      if (openCurly.Content != "{")
-      {
-        string msg = $"Expected an open curly, but got a {classNameWord.Type} {classNameWord.Content}";
-        throw new CompileErrorException(classNameWord.Position, msg);
-      }
+      yield return tokens.ExpectSymbol("{", classDef);
       tokens = tokens.Skip(1);
-      yield return NextTokenResult.GoodSoFar(classDef);
 
       // TODO: Parse the insides of the class.
       // For now, just expect it to be empty
-      Token closeCurly = tokens.First();
-      if (closeCurly.Content != "}")
-      {
-        string msg = $"Expected an open curly, but got a {classNameWord.Type} {classNameWord.Content}";
-        throw new CompileErrorException(classNameWord.Position, msg);
-      }
-      yield return NextTokenResult.GoodSoFar(classDef);
+      yield return tokens.ExpectSymbol("}", classDef);
+      tokens = tokens.Skip(1);
     }
 
     private IEnumerable<NextTokenResult> WrapCompileErrors(IEnumerable<NextTokenResult> results)
