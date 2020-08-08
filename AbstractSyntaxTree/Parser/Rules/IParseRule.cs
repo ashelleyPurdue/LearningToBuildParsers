@@ -6,6 +6,6 @@ namespace AbstractSyntaxTree
 {
   public interface IParseRule
   {
-    IEnumerable<NextTokenResult> TryParse(IEnumerable<Token> tokens);
+    NextTokenResult FeedToken(Token token);
   }
 }

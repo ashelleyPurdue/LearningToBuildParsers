@@ -9,13 +9,31 @@ namespace AbstractSyntaxTree
   {
     private readonly List<IParseRule> _rules = new List<IParseRule>();
 
+    private Token _currentToken = null;
+    private IEnumerator<NextTokenResult> _state = null;
+
     public RuleSet AddRule(IParseRule rule)
     {
       _rules.Add(rule);
       return this;
     }
 
-    public IEnumerable<NextTokenResult> TryParse(IEnumerable<Token> tokens)
+    public NextTokenResult FeedToken(Token token)
+    {
+      // Start up the state machine, if it isn't already.
+      if (_state == null)
+        _state = TryParse().GetEnumerator();
+
+      // Feed the token to the state machine
+      _currentToken = token;
+
+      if (!_state.MoveNext())
+        throw new Exception("TODO: I dont' know what to do here yet");
+
+      return _state.Current;
+    }
+
+    private IEnumerable<NextTokenResult> TryParse()
     {
       // We're going to start with a set of candidate rules that could
       // potentially be matched by the upcoming tokens.
@@ -25,23 +43,18 @@ namespace AbstractSyntaxTree
       // If a candidate rule fails, it is eliminated from the list of candidates.
       // If all of the candidates are eliminated, then this ruleset is fails.
 
-      List<IEnumerator<NextTokenResult>> candidateRules = _rules
-        .Select(r => r.TryParse(tokens).GetEnumerator())
-        .ToList();
+      var candidateRules = _rules;
 
-      foreach (var token in tokens)
+      while (true)
       {
         NextTokenResult? lastFailure = null;
         var rules = candidateRules;
-        candidateRules = new List<IEnumerator<NextTokenResult>>();
+        candidateRules = new List<IParseRule>();
 
         // Feed this token to every rule.
         foreach (var rule in rules)
         {
-          if(!rule.MoveNext())
-            continue;
-
-          NextTokenResult result = rule.Current;
+          NextTokenResult result = rule.FeedToken(_currentToken);
 
           // If this rule matched, then it wins.
           // The ruleset is complete, so yield its result and stop.

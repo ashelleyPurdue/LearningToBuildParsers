@@ -7,34 +7,50 @@ namespace AbstractSyntaxTree
 {
   public class ClassParseRule : IParseRule
   {
-    public IEnumerable<NextTokenResult> TryParse(IEnumerable<Token> tokens)
+    private Token _currentToken = null;
+    private IEnumerator<NextTokenResult> _state = null;
+
+    public NextTokenResult FeedToken(Token token)
     {
-      return WrapCompileErrors(TryParseImpl(tokens));
+      // Start up the state machine, if it isn't already.
+      if (_state == null)
+        _state = TryParse().GetEnumerator();
+
+      // Feed the token to the state machine
+      _currentToken = token;
+
+      if (!_state.MoveNext())
+        throw new Exception("TODO: I dont' know what to do here yet");
+
+      return _state.Current;
     }
 
-    private IEnumerable<NextTokenResult> TryParseImpl(IEnumerable<Token> tokens)
+    private IEnumerable<NextTokenResult> TryParse()
+    {
+      return WrapCompileErrors(TryParseImpl());
+    }
+
+    private IEnumerable<NextTokenResult> TryParseImpl()
     {
       var classDef = new ClassDefinition();
 
       // Expect the class keyword
-      yield return tokens.ExpectKeyword("class", classDef);
-      tokens = tokens.Skip(1);
+      yield return (new Token[] {_currentToken}).ExpectKeyword("class", classDef);
 
       // Grab the name
       string className;
-      yield return tokens.ExtractToken(TokenType.Word, classDef, out className);
-      tokens = tokens.Skip(1);
-
+      yield return (new Token[] { _currentToken }).ExtractToken(TokenType.Word, classDef, out className);
       classDef.Name = className;
 
       // Expect an opening curly bracket
-      yield return tokens.ExpectSymbol("{", classDef);
-      tokens = tokens.Skip(1);
+      yield return (new Token[] { _currentToken }).ExpectSymbol("{", classDef);
 
-      // TODO: Parse the insides of the class.
+      // TODO: Parse the insides of the class
+      var rules = new RuleSet()
+        .AddRule(new FunctionParseRule());
+
       // For now, just expect it to be empty
-      yield return tokens.ExpectSymbol("}", classDef);
-      tokens = tokens.Skip(1);
+      yield return (new Token[] { _currentToken }).ExpectSymbol("}", classDef);
     }
 
     private IEnumerable<NextTokenResult> WrapCompileErrors(IEnumerable<NextTokenResult> results)

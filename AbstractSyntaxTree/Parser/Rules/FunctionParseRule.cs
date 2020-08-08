@@ -6,7 +6,7 @@ namespace AbstractSyntaxTree
 {
   public class FunctionParseRule : IParseRule
   {
-    public IEnumerable<NextTokenResult> TryParse(IEnumerable<Token> tokens)
+    public NextTokenResult FeedToken(Token token)
     {
       throw new NotImplementedException();
     }
