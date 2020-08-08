@@ -21,16 +21,11 @@ namespace AbstractSyntaxTree
       tokens = tokens.Skip(1);
 
       // Grab the name
-      Token classNameWord = tokens.First();
-      
-      if (classNameWord.Type != TokenType.Word)
-      {
-        string msg = $"Expected a word token for the name, but got a {classNameWord.Type} {classNameWord.Content}";
-        throw new CompileErrorException(classNameWord.Position, msg);
-      }
-      classDef.Name = classNameWord.Content;
-      yield return NextTokenResult.GoodSoFar(classDef);
+      string className;
+      yield return tokens.ExtractToken(TokenType.Word, classDef, out className);
       tokens = tokens.Skip(1);
+
+      classDef.Name = className;
 
       // Expect an opening curly bracket
       yield return tokens.ExpectSymbol("{", classDef);

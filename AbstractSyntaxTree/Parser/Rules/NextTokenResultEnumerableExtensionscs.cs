@@ -39,5 +39,28 @@ namespace AbstractSyntaxTree
       string keyword,
       object node
     ) => tokens.ExpectSpecificToken(TokenType.Keyword, keyword, node);
+
+    public static NextTokenResult ExtractToken(
+      this IEnumerable<Token> tokens,
+      TokenType tokenType,
+      object node,
+      out string content
+    )
+    {
+      if (!tokens.Any())
+        throw new Exception($"Expected a {tokenType} token, but reached the end of the file.");
+
+      var token = tokens.First();
+      
+      // TODO: Return a failed NextTokenResult instead of throwing
+      if (token.Type != tokenType)
+      {
+        string msg = $@"Expected a {tokenType}, but got the {token.Type} {token.Content}.";
+        throw new CompileErrorException(token.Position, msg);
+      }
+
+      content = token.Content;
+      return NextTokenResult.GoodSoFar(node);
+    }
   }
 }
