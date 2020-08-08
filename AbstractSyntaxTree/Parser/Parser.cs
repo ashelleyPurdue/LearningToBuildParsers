@@ -27,17 +27,13 @@ namespace AbstractSyntaxTree
       {
         Token token = tokens.Peek();
 
-        switch (token.Type)
+        if (token.Content == "class")
         {
-          case TokenType.Keyword when token.Content == "class":
-            root.Classes.Add(ParseClass(tokens, out tokens));
-            break;
-
-          default: throw new CompileErrorException(
-            token.Position, 
-            $"Unexpected token {token.ToString()}"
-          );
+          root.Classes.Add(ParseClass(tokens, out tokens));
+          continue;
         }
+        
+        throw new CompileErrorException(token.Position, $"Unexpected token {token.Content}");
       }
       
       return root;
@@ -64,23 +60,18 @@ namespace AbstractSyntaxTree
       {
         Token token = tokens.Peek();
 
-        switch (token.Type)
+        if (token.Content == "}")
+          break;
+
+        if (token.Content == "function")
         {
-          case TokenType.Symbol when token.Content == "}": 
-            goto exitClass; // Betcha didn't know C# has "goto".  Mwahahaha!
-
-          case TokenType.Keyword when token.Content == "function":
-            classDef.Functions.Add(ParseFunction(tokens, out tokens));
-            break;
-
-          default: throw new CompileErrorException(
-            token.Position,
-            $"Unexpected token {token.Content}"
-          );
+          classDef.Functions.Add(ParseFunction(tokens, out tokens));
+          continue;
         }
+
+        throw new CompileErrorException(token.Position, $"Unexpected token {token.Content}");
       }
 
-      exitClass:
       rest = tokens.ConsumeSymbol("}");
       return classDef;
     }
@@ -108,23 +99,19 @@ namespace AbstractSyntaxTree
       while (!tokens.IsEmpty())
       {
         var token = tokens.Peek();
-        switch (token.Type)
+
+        if (token.Content == "}")
+          break;
+        
+        if (token.Content == "let")
         {
-          case TokenType.Symbol when token.Content == "}":
-            goto exitFunc;
-
-          case TokenType.Keyword when token.Content == "let":
-            funcDef.Statements.Add(ParseLetStatement(tokens, out tokens));
-            break;
-
-          default: throw new CompileErrorException(
-            token.Position,
-            $"Unexpected token {token.Content}"
-          );
+          funcDef.Statements.Add(ParseLetStatement(tokens, out tokens));
+          continue;
         }
+        
+        throw new CompileErrorException(token.Position, $"Unexpected token {token.Content}");
       }
 
-      exitFunc:
       tokens = tokens.ConsumeSymbol("}");
       rest = tokens;
       return funcDef;
