@@ -31,6 +31,7 @@ namespace AbstractSyntaxTree
 
       foreach (var token in tokens)
       {
+        NextTokenResult? lastFailure = null;
         var rules = candidateRules;
         candidateRules = new List<IEnumerator<NextTokenResult>>();
 
@@ -54,15 +55,26 @@ namespace AbstractSyntaxTree
           // We eliminate it by not adding it back into the
           // candidate rules.
           if (result.state == RuleMatchState.Fail)
+          {
+            lastFailure = result;
             continue;
+          }
 
           // This rule is good so far, so don't eliminate it.
           candidateRules.Add(rule);
         }
 
-        // If there is at least one remaining candidate, then we're good so far.
-        if (candidateRules.Count > 0)
-          yield return NextTokenResult.GoodSoFar(null);
+        // If the last remaining candidate was eliminated, so the whole thing is a
+        // bust.  Yield the error that caused the last rule to fail, and then
+        // exit.
+        if (candidateRules.Count <= 0)
+        {
+          yield return lastFailure.Value;
+          yield break;
+        }
+
+        // There is at least one remaining candidate, so we're good so far.
+        yield return NextTokenResult.GoodSoFar(null);
       }
     }
   }
