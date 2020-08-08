@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace AbstractSyntaxTree
 {
-  public class ClassParseRule
+  public class ClassParseRule : IParseRule
   {
     public IEnumerable<NextTokenResult> TryParse(IEnumerable<Token> tokens)
     {
