@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Linq;
 
 namespace AbstractSyntaxTree
 {
@@ -11,35 +12,51 @@ namespace AbstractSyntaxTree
       return WrapCompileErrors(TryParseImpl(tokens));
     }
 
-    private IEnumerable<NextTokenResult> TryParseImpl(IEnumerable<Token> tokensFoo)
+    private IEnumerable<NextTokenResult> TryParseImpl(IEnumerable<Token> tokens)
     {
-      var tokens = new TokenWalker(tokensFoo);
       var classDef = new ClassDefinition();
 
-      // Look for the class keyword
-      tokens = tokens.ConsumeKeyword("class");
+      // Expect the class keyword
+      Token classKeyword = tokens.First();
+      tokens = tokens.Skip(1);
+      if (classKeyword.Content != "class")
+      {
+        string msg = $"Expected class keyword, but got {classKeyword.Content}";
+        throw new CompileErrorException(classKeyword.Position, msg);
+      }
       yield return NextTokenResult.GoodSoFar(classDef);
 
       // Grab the name
-      classDef.Name = tokens
-        .Expect(TokenType.Word)
-        .Content;
+      Token classNameWord = tokens.First();
+      tokens = tokens.Skip(1);
 
-      tokens = tokens.Consume();
+      if (classNameWord.Type != TokenType.Word)
+      {
+        string msg = $"Expected a word token for the name, but got a {classNameWord.Type} {classNameWord.Content}";
+        throw new CompileErrorException(classNameWord.Position, msg);
+      }
+      classDef.Name = classNameWord.Content;
       yield return NextTokenResult.GoodSoFar(classDef);
 
-      // Parse the insides of the class
-      classDef.Functions = new List<FunctionDefinition>();
-      tokens = tokens.ConsumeSymbol("{");
-
-      while (!tokens.IsEmpty())
+      // Expect an opening curly bracket
+      Token openCurly = tokens.First();
+      if (openCurly.Content != "{")
       {
-        Token token = tokens.Peek();
-
-
-        yield return NextTokenResult.Fail(classDef, token.Position, $"Unexpected token {token.Content}");
-        yield break;
+        string msg = $"Expected an open curly, but got a {classNameWord.Type} {classNameWord.Content}";
+        throw new CompileErrorException(classNameWord.Position, msg);
       }
+      tokens = tokens.Skip(1);
+      yield return NextTokenResult.GoodSoFar(classDef);
+
+      // TODO: Parse the insides of the class.
+      // For now, just expect it to be empty
+      Token closeCurly = tokens.First();
+      if (closeCurly.Content != "}")
+      {
+        string msg = $"Expected an open curly, but got a {classNameWord.Type} {classNameWord.Content}";
+        throw new CompileErrorException(classNameWord.Position, msg);
+      }
+      yield return NextTokenResult.GoodSoFar(classDef);
     }
 
     private IEnumerable<NextTokenResult> WrapCompileErrors(IEnumerable<NextTokenResult> results)
