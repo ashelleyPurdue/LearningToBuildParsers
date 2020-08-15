@@ -5,12 +5,9 @@ using System.Linq;
 
 namespace AbstractSyntaxTree
 {
-  public class RuleSet
+  public class RuleSet : BaseParseRule
   {
     private readonly List<IParseRule> _rules = new List<IParseRule>();
-
-    private Token _currentToken = null;
-    private IEnumerator<NextTokenResult> _state = null;
 
     public RuleSet AddRule(IParseRule rule)
     {
@@ -18,22 +15,7 @@ namespace AbstractSyntaxTree
       return this;
     }
 
-    public NextTokenResult FeedToken(Token token)
-    {
-      // Start up the state machine, if it isn't already.
-      if (_state == null)
-        _state = TryParse().GetEnumerator();
-
-      // Feed the token to the state machine
-      _currentToken = token;
-
-      if (!_state.MoveNext())
-        throw new Exception("TODO: I dont' know what to do here yet");
-
-      return _state.Current;
-    }
-
-    private IEnumerable<NextTokenResult> TryParse()
+    protected override IEnumerable<NextTokenResult> TryParse()
     {
       // We're going to start with a set of candidate rules that could
       // potentially be matched by the upcoming tokens.
