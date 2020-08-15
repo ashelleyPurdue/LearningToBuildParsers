@@ -4,11 +4,22 @@ using System.Text;
 
 namespace AbstractSyntaxTree
 {
-  public class FunctionParseRule : IParseRule
+  public class FunctionParseRule : BaseParseRule
   {
-    public NextTokenResult FeedToken(Token token)
+    protected override IEnumerable<NextTokenResult> TryParse()
     {
-      throw new NotImplementedException();
+      var node = new FunctionDefinition();
+
+      yield return ExpectKeyword("function", node);
+
+      string funcName;
+      yield return ExtractToken(TokenType.Word, node, out funcName);
+      node.Name = funcName;
+
+      yield return ExpectSymbol("(", node);
+      yield return ExpectSymbol(")", node);
+      yield return ExpectSymbol("{", node);
+      yield return ExpectSymbol("}", node);
     }
   }
 }
