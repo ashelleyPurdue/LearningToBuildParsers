@@ -68,7 +68,7 @@ namespace AbstractSyntaxTree
       object node
     )
     {
-      if (_currentToken.Type != TokenType.Symbol)
+      if (_currentToken.Type != type)
       {
         string msg = $@"Expected the {type} ""{content}"", but got the {_currentToken.Type} {_currentToken.Content}.";
         return NextTokenResult.Fail(node, _currentToken.Position, msg);
