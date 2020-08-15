@@ -19,7 +19,10 @@ namespace AbstractSyntaxTree
       yield return ExpectSymbol("(", node);
       yield return ExpectSymbol(")", node);
       yield return ExpectSymbol("{", node);
-      yield return ExpectSymbol("}", node);
+
+      var end = ExpectSymbol("}", node);
+      end.state = RuleMatchState.Complete;
+      yield return end;
     }
   }
 }
