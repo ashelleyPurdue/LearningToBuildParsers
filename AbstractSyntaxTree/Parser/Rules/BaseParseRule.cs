@@ -87,6 +87,14 @@ namespace AbstractSyntaxTree
       object node
     ) => ExpectSpecificToken(TokenType.Keyword, keyword, node);
 
+    /// <summary>
+    /// Expects the current token to have certain type.
+    /// If it is, extracts that content to an out variable.
+    /// </summary>
+    /// <param name="tokenType"></param>
+    /// <param name="node"></param>
+    /// <param name="content">The variable you want the token's content extracted to.</param>
+    /// <returns></returns>
     protected NextTokenResult ExtractToken(
       TokenType tokenType,
       object node,
@@ -101,6 +109,31 @@ namespace AbstractSyntaxTree
       }
 
       content = _currentToken.Content;
+      return NextTokenResult.GoodSoFar(node);
+    }
+
+    /// <summary>
+    /// Expects the current token to have certain type.
+    /// If it is, "setter" will be called with the token's content as a parameter.
+    /// </summary>
+    /// <param name="tokenType"></param>
+    /// <param name="node"></param>
+    /// <param name="setter">A callback that sets some property in "node" to the token's content</param>
+    /// <returns></returns>
+    protected NextTokenResult ExtractToken(
+      TokenType tokenType,
+      object node,
+      Action<string> setter
+    )
+    {
+      // TODO: Return a failed NextTokenResult instead of throwing
+      if (_currentToken.Type != tokenType)
+      {
+        string msg = $@"Expected a {tokenType}, but got the {_currentToken.Type} {_currentToken.Content}.";
+        throw new CompileErrorException(_currentToken.Position, msg);
+      }
+
+      setter(_currentToken.Content);
       return NextTokenResult.GoodSoFar(node);
     }
 
