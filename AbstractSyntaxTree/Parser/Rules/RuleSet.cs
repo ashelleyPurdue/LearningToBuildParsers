@@ -8,11 +8,26 @@ namespace AbstractSyntaxTree
   public class RuleSet : BaseParseRule
   {
     private readonly List<IParseRule> _rules = new List<IParseRule>();
+    private readonly Dictionary<IParseRule, Action<object>> _callbacks 
+      = new Dictionary<IParseRule, Action<object>>();
+
 
     public RuleSet AddRule(IParseRule rule)
     {
       _rules.Add(rule);
       return this;
+    }
+
+    public RuleSet AddRule<TNode>(IParseRule rule, Action<TNode> onComplete)
+    {
+      _rules.Add(rule);
+      _callbacks.Add(rule, WrappedCallback);
+      return this;
+
+      void WrappedCallback(object node)
+      {
+        onComplete((TNode)node);
+      }
     }
 
     protected override IEnumerable<NextTokenResult> TryParse()
@@ -42,6 +57,9 @@ namespace AbstractSyntaxTree
           // The ruleset is complete, so yield its result and stop.
           if (result.state == RuleMatchState.Complete)
           {
+            if (_callbacks.ContainsKey(rule))
+              _callbacks[rule](result.node);
+
             yield return result;
             yield break;
           }
