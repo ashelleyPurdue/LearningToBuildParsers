@@ -61,5 +61,47 @@ namespace AbstractSyntaxTree
         yield return resultsEnum.Current;
       }
     }
+
+    protected NextTokenResult ExpectSpecificToken(
+      TokenType type,
+      string content,
+      object node
+    )
+    {
+      if (_currentToken.Type != TokenType.Symbol)
+      {
+        string msg = $@"Expected the {type} ""{content}"", but got the {_currentToken.Type} {_currentToken.Content}.";
+        return NextTokenResult.Fail(node, _currentToken.Position, msg);
+      }
+
+      return NextTokenResult.GoodSoFar(node);
+    }
+
+    protected NextTokenResult ExpectSymbol(
+      string symbol,
+      object node
+    ) => ExpectSpecificToken(TokenType.Symbol, symbol, node);
+
+    protected NextTokenResult ExpectKeyword(
+      string keyword,
+      object node
+    ) => ExpectSpecificToken(TokenType.Keyword, keyword, node);
+
+    protected NextTokenResult ExtractToken(
+      TokenType tokenType,
+      object node,
+      out string content
+    )
+    {
+      // TODO: Return a failed NextTokenResult instead of throwing
+      if (_currentToken.Type != tokenType)
+      {
+        string msg = $@"Expected a {tokenType}, but got the {_currentToken.Type} {_currentToken.Content}.";
+        throw new CompileErrorException(_currentToken.Position, msg);
+      }
+
+      content = _currentToken.Content;
+      return NextTokenResult.GoodSoFar(node);
+    }
   }
 }
