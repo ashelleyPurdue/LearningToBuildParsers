@@ -9,6 +9,7 @@ namespace AbstractSyntaxTree
     protected override IEnumerable<NextTokenResult> TryParse()
     {
       var node = new FunctionDefinition();
+      node.Statements = new List<IStatement>();
 
       yield return ExpectKeyword("function", node);
 
