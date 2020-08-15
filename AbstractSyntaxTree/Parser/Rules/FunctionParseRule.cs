@@ -20,35 +20,33 @@ namespace AbstractSyntaxTree
 
       // Keep parsing let statements until we encounter a closing bracket.
       // TODO: Replace this with a RuleParser
+
       while (_currentToken.Content != "}")
       {
-        if (_currentToken.Content == "let")
+        var rules = new RuleSet()
+          .AddRule<IStatement>(new LetStatementParseRule(), node.Statements.Add);
+
+        // Feed all tokens into the ruleset until one of the rules completes,
+        // or until there is an error.
+        NextTokenResult result = rules.FeedToken(_currentToken);
+        while (result.state == RuleMatchState.GoodSoFar)
         {
-          // Parse the entirety of this let-statement, converting its
-          // NextTokenResults into ones for a FunctionDefinition.
-          foreach (var result in ParseLetStatement())
-          {
-            switch (result.state)
-            {
-              case RuleMatchState.GoodSoFar:
-                yield return NextTokenResult.GoodSoFar(node);
-                break;
-              case RuleMatchState.Fail:
-                yield return result;
-                break;
-              case RuleMatchState.Complete:
-                node.Statements.Add((LetStatement)result.node);
-                yield return NextTokenResult.GoodSoFar(node);
-                break;
-            }
-          }
+          yield return NextTokenResult.GoodSoFar(node);
+          result = rules.FeedToken(_currentToken);
         }
+
+        // If there was an error, bubble it up
+        if (result.state == RuleMatchState.Fail)
+          yield return result;
       }
 
       yield return FinishWithSymbol("}", node);
     }
+  }
 
-    private IEnumerable<NextTokenResult> ParseLetStatement()
+  public class LetStatementParseRule : BaseParseRule
+  {
+    protected override IEnumerable<NextTokenResult> TryParse()
     {
       var node = new LetStatement();
 
