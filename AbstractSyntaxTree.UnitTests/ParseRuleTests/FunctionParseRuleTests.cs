@@ -76,6 +76,9 @@ namespace AbstractSyntaxTree.UnitTests
 
     private FunctionDefinition AssertCompleted(NextTokenResult result)
     {
+      if (result.state == RuleMatchState.Fail)
+        throw result.error;
+
       Assert.Equal(RuleMatchState.Complete, result.state);
       return Assert.IsAssignableFrom<FunctionDefinition>(result.node);
     }
