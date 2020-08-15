@@ -11,15 +11,8 @@ namespace AbstractSyntaxTree
     {
       var classDef = new ClassDefinition();
 
-      // Expect the class keyword
       yield return ExpectKeyword("class", classDef);
-
-      // Grab the name
-      string className;
-      yield return ExtractToken(TokenType.Word, classDef, out className);
-      classDef.Name = className;
-
-      // Expect an opening curly bracket
+      yield return ExtractWord(classDef, n => classDef.Name = n);
       yield return ExpectSymbol("{", classDef);
 
       // TODO: Parse the insides of the class

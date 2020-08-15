@@ -12,10 +12,7 @@ namespace AbstractSyntaxTree
       node.Statements = new List<IStatement>();
 
       yield return ExpectKeyword("function", node);
-
-      string funcName;
-      yield return ExtractToken(TokenType.Word, node, out funcName);
-      node.Name = funcName;
+      yield return ExtractWord(node, n => node.Name = n);
 
       yield return ExpectSymbol("(", node);
       yield return ExpectSymbol(")", node);
@@ -56,11 +53,7 @@ namespace AbstractSyntaxTree
       var node = new LetStatement();
 
       yield return ExpectKeyword("let", node);
-
-      string varName;
-      yield return ExtractToken(TokenType.Word, node, out varName);
-      node.Name = varName;
-
+      yield return ExtractWord(node, n => node.Name = n);
       yield return FinishWithSymbol(";", node);
     }
   }
