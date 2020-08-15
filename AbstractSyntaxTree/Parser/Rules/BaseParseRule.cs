@@ -137,6 +137,12 @@ namespace AbstractSyntaxTree
       return NextTokenResult.GoodSoFar(node);
     }
 
+    protected NextTokenResult ExtractWord(object node, out string content)
+      => ExtractToken(TokenType.Word, node, out content);
+
+    protected NextTokenResult ExtractWord(object node, Action<string> setter)
+      => ExtractToken(TokenType.Word, node, setter);
+
     /// <summary>
     /// Like ExpectSymbol, except it returns a state of Complete instead of GoodSoFar.
     /// </summary>
