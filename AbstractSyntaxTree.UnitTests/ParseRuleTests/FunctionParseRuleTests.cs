@@ -19,6 +19,40 @@ namespace AbstractSyntaxTree.UnitTests
       Assert.Empty(funcDef.Statements);
     }
 
+    [Fact]
+    public void It_Can_Parse_Multiple_Let_Statements()
+    {
+      const string src = 
+      @"
+        function DoThing()
+        {
+          let fooVariable;
+          let barVariable;
+          let bazVariable;
+        }
+      ";
+
+      string[] expectedNames = new[]
+      {
+        "fooVariable",
+        "barVariable",
+        "bazVariable"
+      };
+
+      var result = ParseFunction(src);
+      var funcDef = AssertCompleted(result);
+
+      // Assert that there is a let statement for each expected name.
+      for (int i = 0; i < expectedNames.Length; i++)
+      {
+        var letStatement = Assert.IsAssignableFrom<LetStatement>(funcDef.Statements[i]);
+        var expectedName = expectedNames[i];
+        var actualName = letStatement.Name;
+
+        Assert.Equal(expectedName, actualName);
+      }
+    }
+
     private NextTokenResult ParseFunction(string src)
     {
       // Get tokens from the src
