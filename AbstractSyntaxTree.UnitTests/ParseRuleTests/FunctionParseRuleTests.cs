@@ -69,7 +69,11 @@ namespace AbstractSyntaxTree.UnitTests
       NextTokenResult lastResult = default;
 
       foreach (Token t in tokens)
+      {
         lastResult = rule.FeedToken(t);
+        if (lastResult.state == RuleMatchState.Fail)
+          throw lastResult.error;
+      }
 
       return lastResult;
     }
