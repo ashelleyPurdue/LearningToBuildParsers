@@ -47,9 +47,8 @@ namespace AbstractSyntaxTree
           }
         }
       }
-      var end = ExpectSymbol("}", node);
-      end.state = RuleMatchState.Complete;
-      yield return end;
+
+      yield return FinishWithSymbol("}", node);
     }
 
     private IEnumerable<NextTokenResult> ParseLetStatement()
@@ -62,9 +61,7 @@ namespace AbstractSyntaxTree
       yield return ExtractToken(TokenType.Word, node, out varName);
       node.Name = varName;
 
-      var end = ExpectSymbol(";", node);
-      end.state = RuleMatchState.Complete;
-      yield return end;
+      yield return FinishWithSymbol(";", node);
     }
   }
 }

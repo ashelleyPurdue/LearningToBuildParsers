@@ -103,5 +103,21 @@ namespace AbstractSyntaxTree
       content = _currentToken.Content;
       return NextTokenResult.GoodSoFar(node);
     }
+
+    /// <summary>
+    /// Like ExpectSymbol, except it returns a state of Complete instead of GoodSoFar.
+    /// </summary>
+    /// <param name="content"></param>
+    /// <param name="node"></param>
+    /// <returns></returns>
+    protected NextTokenResult FinishWithSymbol(string content, object node)
+    {
+      var result = ExpectSymbol(content, node);
+
+      if (result.state == RuleMatchState.GoodSoFar)
+        result.state = RuleMatchState.Complete;
+
+      return result;
+    }
   }
 }

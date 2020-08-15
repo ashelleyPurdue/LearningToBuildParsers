@@ -27,9 +27,7 @@ namespace AbstractSyntaxTree
         .AddRule(new FunctionParseRule());
 
       // For now, just expect it to be empty
-      var end = ExpectSymbol("}", classDef);
-      end.state = RuleMatchState.Complete;
-      yield return end;
+      yield return FinishWithSymbol("}", classDef);
     }
   }
 }
