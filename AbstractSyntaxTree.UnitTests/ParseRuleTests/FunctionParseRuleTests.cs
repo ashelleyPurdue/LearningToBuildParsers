@@ -12,10 +12,9 @@ namespace AbstractSyntaxTree.UnitTests
     [Fact]
     public void It_Can_Parse_Empty_Functions()
     {
-      NextTokenResult result = ParseFunction("function DoThing(){}");
+      var result  = ParseFunction("function DoThing(){}");
+      var funcDef = AssertCompleted(result);
 
-      Assert.Equal(RuleMatchState.Complete, result.state);
-      var funcDef = Assert.IsAssignableFrom<FunctionDefinition>(result.node);
       Assert.Equal("DoThing", funcDef.Name);
       Assert.Empty(funcDef.Statements);
     }
@@ -39,6 +38,12 @@ namespace AbstractSyntaxTree.UnitTests
         lastResult = rule.FeedToken(t);
 
       return lastResult;
+    }
+
+    private FunctionDefinition AssertCompleted(NextTokenResult result)
+    {
+      Assert.Equal(RuleMatchState.Complete, result.state);
+      return Assert.IsAssignableFrom<FunctionDefinition>(result.node);
     }
   }
 }
