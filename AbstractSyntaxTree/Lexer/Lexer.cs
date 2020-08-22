@@ -11,7 +11,12 @@ namespace AbstractSyntaxTree
 
     public Lexer(ISet<string> keywords = null)
     {
-      _keywords = keywords ?? new HashSet<string>();
+      _keywords = keywords ?? new HashSet<string>
+      {
+        "class",
+        "function",
+        "let"
+      };
     }
 
     public IEnumerable<Token> ToTokens(IEnumerable<char> src)
