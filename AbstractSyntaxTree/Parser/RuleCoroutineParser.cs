@@ -8,12 +8,15 @@ namespace AbstractSyntaxTree.Parser
   public delegate IEnumerable<RuleResult> RuleCoroutine(CurrentTokenCallback currentToken);
   public class RuleCoroutineParser : IRuleParser
   {
-    private readonly IEnumerator<RuleResult> _state;
+    private readonly RuleCoroutine _coroutine;
+
+    private IEnumerator<RuleResult> _state;
     private Token _currentToken;
 
     public RuleCoroutineParser(RuleCoroutine rule)
     {
-      _state = rule(GetCurrentToken).GetEnumerator();
+      _coroutine = rule;
+      Reset();
     }
 
     public RuleResult FeedToken(Token t)
@@ -22,6 +25,12 @@ namespace AbstractSyntaxTree.Parser
       _state.MoveNext();
 
       return _state.Current;
+    }
+
+    public void Reset()
+    {
+      _currentToken = null;
+      _state = _coroutine(GetCurrentToken).GetEnumerator();
     }
 
     private Token GetCurrentToken() => _currentToken;

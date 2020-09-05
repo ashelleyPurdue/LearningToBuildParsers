@@ -8,6 +8,7 @@ namespace AbstractSyntaxTree.Parser
   public class MultiRuleParser : IRuleParser
   {
     private List<IRuleParser> _rules = new List<IRuleParser>();
+    private List<IRuleParser> _remainingRules = new List<IRuleParser>();
 
     private Dictionary<IRuleParser, Action<object>> _ruleCallbacks
       = new Dictionary<IRuleParser, Action<object>>();
@@ -17,6 +18,7 @@ namespace AbstractSyntaxTree.Parser
     public MultiRuleParser AddRule<TNode>(IRuleParser rule, Action<TNode> onCompleted)
     {
       _rules.Add(rule);
+      _remainingRules.Add(rule);
       _ruleCallbacks.Add(rule, CallbackWrapper);
 
       void CallbackWrapper(object uncastedNode)
@@ -40,11 +42,11 @@ namespace AbstractSyntaxTree.Parser
       if (_isFinished)
         throw new Exception("Tried to feed a token to an already-finished MultiRuleParser.");
 
-      if (_rules.Count == 0)
+      if (_remainingRules.Count == 0)
         throw new Exception("Tried to feed a token to an unfinished yet empty MultiRuleParser.");
 
       // Feed the token to each rule
-      var ruleResults = _rules
+      var ruleResults = _remainingRules
         .Select(r => (rule: r, result: r.FeedToken(t)))
         .ToArray();
 
@@ -53,11 +55,11 @@ namespace AbstractSyntaxTree.Parser
       {
         if (p.result.status == RuleStatus.Failed)
         {
-          _rules.Remove(p.rule);
+          _remainingRules.Remove(p.rule);
 
           // If that was the last subrule, then the whole
           // ruleset fails.
-          if (_rules.Count == 0)
+          if (_remainingRules.Count == 0)
             return p.result;
         }
       }
@@ -95,6 +97,18 @@ namespace AbstractSyntaxTree.Parser
         yield return result;
       }
       while (result.status == RuleStatus.GoodSoFar);
+    }
+
+    public void Reset()
+    {
+      _isFinished = false;
+      _remainingRules.Clear();
+
+      foreach (var rule in _rules)
+      {
+        rule.Reset();
+        _remainingRules.Add(rule);
+      }
     }
   }
 }

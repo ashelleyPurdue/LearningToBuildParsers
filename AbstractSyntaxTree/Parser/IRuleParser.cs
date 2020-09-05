@@ -14,5 +14,10 @@ namespace AbstractSyntaxTree.Parser
     /// <param name="t"></param>
     /// <returns></returns>
     public RuleResult FeedToken(Token t);
+
+    /// <summary>
+    /// Resets the parser to its initial state
+    /// </summary>
+    public void Reset();
   }
 }
