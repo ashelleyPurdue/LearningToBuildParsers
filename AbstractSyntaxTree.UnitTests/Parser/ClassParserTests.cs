@@ -27,7 +27,14 @@ namespace AbstractSyntaxTree.UnitTests.Parser
       var rule = new RuleCoroutineParser(RuleCoroutines.ParseClass);
 
       foreach (Token t in tokens)
-        yield return rule.FeedToken(t);
+      {
+        var result = rule.FeedToken(t);
+
+        if (result.status == RuleStatus.Failed)
+          throw result.error;
+
+        yield return result;
+      }
     }
   }
 }
