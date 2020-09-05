@@ -20,6 +20,32 @@ namespace AbstractSyntaxTree.UnitTests.Parser
       Assert.Equal("ThingDoer", classDef.Name);
     }
 
+    [Fact]
+    private void It_Can_Parse_Classes_With_Empty_Functions()
+    {
+      string src =
+      @"
+        class ThingDoer
+        {
+          function DoThing() {}
+          function DoAnotherThing() {}
+          function DoOneLastThing() {}
+        }
+      ";
+
+      var result = ParseClass(src).Last();
+      result.AssertComplete();
+
+      var classDef = Assert.IsAssignableFrom<ClassDefinition>(result.node);
+      var functionNames = classDef
+        .Functions
+        .Select(f => f.Name);
+
+      Assert.Contains("DoThing", functionNames);
+      Assert.Contains("DoAnotherThing", functionNames);
+      Assert.Contains("DoOneLastThing", functionNames);
+    }
+
     private IEnumerable<RuleResult> ParseClass(string src)
     {
       var lexer = new Lexer();
