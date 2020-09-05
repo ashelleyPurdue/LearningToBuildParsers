@@ -15,13 +15,12 @@ namespace AbstractSyntaxTree.Parser
       yield return Extract.Word(t(), name => node.Name = name);
       yield return Expect.Symbol(t(), "{");
 
-      var classMemberParser = new RepeatedMultiruleParser()
-        .AddRule<FunctionDefinition>(ParseFunction, f => node.Functions.Add(f))
-        .TerminatesWhen(t => t.IsSymbol("}"))
-        .YieldsWhenComplete(node);
+      var rules = new WhileParser(t => !t.IsSymbol("}"))
+        .Or<FunctionDefinition>(ParseFunction, f => node.Functions.Add(f))
+        .YieldsNode(node);
 
-      while (!classMemberParser.IsFinished)
-        yield return classMemberParser.FeedToken(t());
+      while (!rules.IsFinished)
+        yield return rules.FeedToken(t());
     }
   }
 }

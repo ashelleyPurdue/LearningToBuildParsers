@@ -5,7 +5,7 @@ using System.Text;
 
 namespace AbstractSyntaxTree.Parser
 {
-  public class MultiRuleParser : IRuleParser
+  public class OrParser : IRuleParser
   {
     private List<IRuleParser> _rules = new List<IRuleParser>();
     private List<IRuleParser> _remainingRules = new List<IRuleParser>();
@@ -15,7 +15,7 @@ namespace AbstractSyntaxTree.Parser
 
     private bool _isFinished = false;
 
-    public MultiRuleParser AddRule<TNode>(IRuleParser rule, Action<TNode> onCompleted)
+    public OrParser Or<TNode>(IRuleParser rule, Action<TNode> onCompleted)
     {
       _rules.Add(rule);
       _remainingRules.Add(rule);
@@ -29,10 +29,10 @@ namespace AbstractSyntaxTree.Parser
       return this;
     }
 
-    public MultiRuleParser AddRule<TNode>(RuleCoroutine coroutine, Action<TNode> onCompleted)
+    public OrParser Or<TNode>(RuleCoroutine coroutine, Action<TNode> onCompleted)
     {
       var rule = new RuleCoroutineParser(coroutine);
-      return AddRule(rule, onCompleted);
+      return Or(rule, onCompleted);
     }
 
     public RuleResult FeedToken(Token t)

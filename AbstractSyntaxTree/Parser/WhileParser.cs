@@ -4,40 +4,35 @@ using System.Text;
 
 namespace AbstractSyntaxTree.Parser
 {
-  public class RepeatedMultiruleParser : IRuleParser
+  public class WhileParser : IRuleParser
   {
     public bool IsFinished { get; private set; } = false;
 
-    private Func<Token, bool> _shouldTerminate;
     private object _node;
 
-    private readonly MultiRuleParser _rules = new MultiRuleParser();
+    private readonly Func<Token, bool> _shouldKeepLooping;
+    private readonly OrParser _rules = new OrParser();
     private readonly RuleCoroutineParser _impl;
 
-    public RepeatedMultiruleParser()
+    public WhileParser(Func<Token, bool> shouldKeepLooping)
     {
       _impl = new RuleCoroutineParser(ImplCoroutine);
+      _shouldKeepLooping = shouldKeepLooping;
     }
 
-    public RepeatedMultiruleParser AddRule<TNode>(IRuleParser rule, Action<TNode> onCompleted)
+    public WhileParser Or<TNode>(IRuleParser rule, Action<TNode> onCompleted)
     {
-      _rules.AddRule<TNode>(rule, onCompleted);
+      _rules.Or<TNode>(rule, onCompleted);
       return this;
     }
 
-    public RepeatedMultiruleParser AddRule<TNode>(RuleCoroutine rule, Action<TNode> onCompleted)
+    public WhileParser Or<TNode>(RuleCoroutine rule, Action<TNode> onCompleted)
     {
-      _rules.AddRule<TNode>(rule, onCompleted);
+      _rules.Or<TNode>(rule, onCompleted);
       return this;
     }
 
-    public RepeatedMultiruleParser TerminatesWhen(Func<Token, bool> shouldTerminate)
-    {
-      _shouldTerminate = shouldTerminate;
-      return this;
-    }
-
-    public RepeatedMultiruleParser YieldsWhenComplete(object node)
+    public WhileParser YieldsNode(object node)
     {
       _node = node;
       return this;
@@ -54,7 +49,7 @@ namespace AbstractSyntaxTree.Parser
 
     private IEnumerable<RuleResult> ImplCoroutine(CurrentTokenCallback t)
     {
-      while (!_shouldTerminate(t()))
+      while (_shouldKeepLooping(t()))
       {
         _rules.Reset();
 

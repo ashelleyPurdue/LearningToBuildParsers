@@ -8,14 +8,14 @@ using AbstractSyntaxTree.Parser;
 
 namespace AbstractSyntaxTree.UnitTests.Parser
 {
-  public class MultiRuleParserTests
+  public class OrParserTests
   {
     [Fact]
     public void It_Can_Complete_A_Single_Rule()
     {
       bool callbackInvoked = false;
-      var rules = new MultiRuleParser()
-        .AddRule<object>(ExpectsWords("A", "simple", "rule"), n => callbackInvoked = true);
+      var rules = new OrParser()
+        .Or<object>(ExpectsWords("A", "simple", "rule"), n => callbackInvoked = true);
 
       var tokens = WordTokens("A", "simple", "rule");
       var lastResult = FeedToCoroutine(rules, tokens);
@@ -27,9 +27,9 @@ namespace AbstractSyntaxTree.UnitTests.Parser
     [Fact]
     public void The_Whole_Thing_Fails_If_All_The_Rules_Fail()
     {
-      var rules = new MultiRuleParser()
-        .AddRule<object>(ExpectsWords("no", "more", "heros"), n => throw new Exception("There were heros."))
-        .AddRule<object>(ExpectsWords("no", "way", "this"), n => throw new Exception("It matched"));
+      var rules = new OrParser()
+        .Or<object>(ExpectsWords("no", "more", "heros"), n => throw new Exception("There were heros."))
+        .Or<object>(ExpectsWords("no", "way", "this"), n => throw new Exception("It matched"));
 
       var tokens = WordTokens("no", "way", "words");
       var lastResult = FeedToCoroutine(rules, tokens);
@@ -41,10 +41,10 @@ namespace AbstractSyntaxTree.UnitTests.Parser
     {
       int ruleCompleted = -1;
 
-      var rules = new MultiRuleParser()
-        .AddRule<object>(ExpectsWords("not", "even", "close"), n => ruleCompleted = 0)
-        .AddRule<object>(ExpectsWords("no", "more", "time"), n => ruleCompleted = 1)
-        .AddRule<object>(ExpectsWords("no", "more", "time", "left"), n => ruleCompleted = 2);
+      var rules = new OrParser()
+        .Or<object>(ExpectsWords("not", "even", "close"), n => ruleCompleted = 0)
+        .Or<object>(ExpectsWords("no", "more", "time"), n => ruleCompleted = 1)
+        .Or<object>(ExpectsWords("no", "more", "time", "left"), n => ruleCompleted = 2);
 
       var tokens = WordTokens("no", "more", "time");
       var lastResult = FeedToCoroutine(rules, tokens);
@@ -59,9 +59,9 @@ namespace AbstractSyntaxTree.UnitTests.Parser
       bool firstCallbackInvoked = false;
       bool secondCallbackInvoked = false;
 
-      var rules = new MultiRuleParser()
-        .AddRule<object>(ExpectsWords("foo", "bar", "baz"), n => firstCallbackInvoked = true)
-        .AddRule<object>(ExpectsWords("foo", "bar", "baz"), n => secondCallbackInvoked = true);
+      var rules = new OrParser()
+        .Or<object>(ExpectsWords("foo", "bar", "baz"), n => firstCallbackInvoked = true)
+        .Or<object>(ExpectsWords("foo", "bar", "baz"), n => secondCallbackInvoked = true);
 
       var tokens = WordTokens("foo", "bar", "baz");
       var lastResult = FeedToCoroutine(rules, tokens);
@@ -74,8 +74,8 @@ namespace AbstractSyntaxTree.UnitTests.Parser
     [Fact]
     public void It_Throws_An_Exception_If_You_Feed_It_A_Token_After_It_Has_Completed()
     {
-      var rules = new MultiRuleParser()
-        .AddRule<object>(ExpectsWords("foo", "bar", "baz"), n => { });
+      var rules = new OrParser()
+        .Or<object>(ExpectsWords("foo", "bar", "baz"), n => { });
 
       var tokens = WordTokens("foo", "bar", "baz");
       var lastResult = FeedAll(rules, tokens);
@@ -90,8 +90,8 @@ namespace AbstractSyntaxTree.UnitTests.Parser
     [Fact]
     public void It_Throws_An_Exception_If_You_Feed_It_A_Token_After_It_Has_Failed()
     {
-      var rules = new MultiRuleParser()
-        .AddRule<object>(ExpectsWords("foo", "bar", "baz"), n => { });
+      var rules = new OrParser()
+        .Or<object>(ExpectsWords("foo", "bar", "baz"), n => { });
 
       var tokens = WordTokens("foo", "bar", "fizz");
       var lastResult = FeedAll(rules, tokens);
@@ -121,7 +121,7 @@ namespace AbstractSyntaxTree.UnitTests.Parser
     /// Runs the coroutine until it stops, and returns the final result.
     /// </summary>
     /// <param name="tokens">The sequence of tokens that the current token callback will return.</param>
-    private RuleResult FeedToCoroutine(MultiRuleParser rules, IEnumerable<Token> tokens)
+    private RuleResult FeedToCoroutine(OrParser rules, IEnumerable<Token> tokens)
     {
       var tokenMachine = tokens.GetEnumerator();
       return rules.ToCoroutine(CurrentToken).Last();
