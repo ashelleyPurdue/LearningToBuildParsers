@@ -24,5 +24,15 @@ namespace AbstractSyntaxTree
       Type = type;
       Content = content;
     }
+
+    public bool IsSymbol(string content)
+    {
+      return Type == TokenType.Symbol && Content == content;
+    }
+
+    public bool IsKeyword(string content)
+    {
+      return Type == TokenType.Keyword && Content == content;
+    }
   }
 }
