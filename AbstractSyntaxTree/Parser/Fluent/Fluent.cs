@@ -6,7 +6,7 @@ namespace AbstractSyntaxTree.Parser.Fluent
 {
   public static class Starts
   {
-    public static IThen With() => throw new NotImplementedException();
+    public static IThen With() => new Then();
   }
 
   public interface IThen : ITheAndA<IThenA>
