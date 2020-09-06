@@ -6,21 +6,7 @@ namespace AbstractSyntaxTree.Parser.Fluent
 {
   public static class Starts
   {
-    public static IWith With() => throw new NotImplementedException();
-  }
-
-  public interface IWith
-  {
-    IWithA A(IRuleParser rule);
-    IWithA AWord();
-    IWithA TheSymbol(string content);
-    IWithA TheKeyword(string content);
-  }
-
-  public interface IWithA
-  {
-    IThen Then();
-    IRuleParser Build();
+    public static IThen With() => throw new NotImplementedException();
   }
 
   public interface IThen
