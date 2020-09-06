@@ -11,11 +11,17 @@ namespace AbstractSyntaxTree.UnitTests
   {
     public static object AssertComplete(this RuleResult result)
     {
+      if (result.status == RuleStatus.Failed)
+        throw result.error;
+
       Assert.Equal(RuleStatus.Complete, result.status);
       return result.node;
     }
     public static TNode AssertComplete<TNode>(this RuleResult result)
     {
+      if (result.status == RuleStatus.Failed)
+        throw result.error;
+
       var node = result.AssertComplete();
       return Assert.IsAssignableFrom<TNode>(node);
     }
