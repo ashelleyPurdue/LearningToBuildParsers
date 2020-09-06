@@ -26,16 +26,18 @@ namespace AbstractSyntaxTree.Parser.Fluent
     public IAOptions<IThenA> A { get; private set; }
     public ITheOptions<IThenA> The { get; private set; }
 
+    private readonly ThenA _thenA;
+
     public Then()
     {
-      var thenA = new ThenA(this);
-      A = new ThenAOptions(thenA);
-      The = new ThenTheOptions(thenA);
+      _thenA = new ThenA(this);
+      A = new ThenAOptions(_thenA);
+      The = new ThenTheOptions(_thenA);
     }
 
     public IOr OneOf()
     {
-      throw new NotImplementedException();
+      return new Or(_thenA, this);
     }
   }
 
