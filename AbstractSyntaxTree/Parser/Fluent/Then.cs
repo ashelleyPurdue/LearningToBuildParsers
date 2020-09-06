@@ -7,15 +7,14 @@ namespace AbstractSyntaxTree.Parser.Fluent
   public class ThenA : IThenA
   {
     public readonly ThenChainParser Parser = new ThenChainParser();
-    private readonly Then _then;
+    public IThen Then { get; private set; }
 
     public ThenA(Then then)
     {
-      _then = then;
+      Then = then;
     }
 
     public IRuleParser Build() => Parser;
-    public IThen Then() => _then;
   }
 
   public class Then : IThen

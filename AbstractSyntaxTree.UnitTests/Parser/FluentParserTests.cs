@@ -16,10 +16,10 @@ namespace AbstractSyntaxTree.UnitTests.Parser
     {
       string className = null;
 
-      var classParser = Starts.With().The.Keyword("class")
-        .Then().A.Word(name => className = name)
-        .Then().The.Symbol("{")
-        .Then().The.Symbol("}")
+      var classParser = Starts.With.The.Keyword("class")
+        .Then.A.Word(name => className = name)
+        .Then.The.Symbol("{")
+        .Then.The.Symbol("}")
         .Build();
 
       // Generate some tokens to parse with the parser we just made
@@ -42,19 +42,19 @@ namespace AbstractSyntaxTree.UnitTests.Parser
       string funcName = null;
       string className = null;
 
-      var funcParser = Starts.With().The.Keyword("function")
-        .Then().A.Word(n => funcName = n)
-        .Then().The.Symbol("(")
-        .Then().The.Symbol(")")
-        .Then().The.Symbol("{")
-        .Then().The.Symbol("}")
+      var funcParser = Starts.With.The.Keyword("function")
+        .Then.A.Word(n => funcName = n)
+        .Then.The.Symbol("(")
+        .Then.The.Symbol(")")
+        .Then.The.Symbol("{")
+        .Then.The.Symbol("}")
         .Build();
 
-      var classParser = Starts.With().The.Keyword("class")
-        .Then().A.Word(n => className = n)
-        .Then().The.Symbol("{")
-        .Then().A.Rule<object>(funcParser, node => { }) // TODO: test that it returns some kind of function object
-        .Then().The.Symbol("}")
+      var classParser = Starts.With.The.Keyword("class")
+        .Then.A.Word(n => className = n)
+        .Then.The.Symbol("{")
+        .Then.A.Rule<object>(funcParser, node => { }) // TODO: test that it returns some kind of function object
+        .Then.The.Symbol("}")
         .Build();
 
       // Generate some tokens to parse with the parser we just made

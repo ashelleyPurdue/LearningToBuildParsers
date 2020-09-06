@@ -6,7 +6,7 @@ namespace AbstractSyntaxTree.Parser.Fluent
 {
   public static class Starts
   {
-    public static IThen With() => new Then();
+    public static IThen With => new Then();
   }
 
   public interface IThen : ITheAndA<IThenA>
@@ -39,7 +39,7 @@ namespace AbstractSyntaxTree.Parser.Fluent
 
   public interface IThenA
   {
-    IThen Then();
+    IThen Then { get; }
     IRuleParser Build();
   }
 
@@ -57,7 +57,7 @@ namespace AbstractSyntaxTree.Parser.Fluent
 
   public interface IOrA
   {
-    IThen Then();
+    IThen Then { get; }
     IOr Or();
     IRuleParser Build();
   }
