@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Linq;
 using Xunit;
 
 using AbstractSyntaxTree.Parser;
@@ -43,14 +44,14 @@ namespace AbstractSyntaxTree.UnitTests.Parser
 
       var funcParser = Starts.With().The.Keyword("function")
         .Then().A.Word(n => funcName = n)
+        .Then().The.Symbol("(")
+        .Then().The.Symbol(")")
         .Then().The.Symbol("{")
         .Then().The.Symbol("}")
         .Build();
 
       var classParser = Starts.With().The.Keyword("class")
         .Then().A.Word(n => className = n)
-        .Then().The.Symbol("(")
-        .Then().The.Symbol(")")
         .Then().The.Symbol("{")
         .Then().A.Rule<object>(funcParser, node => { }) // TODO: test that it returns some kind of function object
         .Then().The.Symbol("}")
@@ -64,7 +65,7 @@ namespace AbstractSyntaxTree.UnitTests.Parser
           function DoThing() {}
         }
       ";
-      var tokens = new Lexer().ToTokens(src);
+      var tokens = new Lexer().ToTokens(src).ToArray();
 
       // Parse them
       RuleResult result = RuleResult.GoodSoFar();
