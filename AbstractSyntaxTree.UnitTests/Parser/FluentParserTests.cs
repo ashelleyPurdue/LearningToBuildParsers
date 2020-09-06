@@ -75,5 +75,48 @@ namespace AbstractSyntaxTree.UnitTests.Parser
       Assert.Contains(funcDef, classDef.Functions);
       Assert.Equal("DoThing", funcDef.Name);
     }
+  
+    [Fact]
+    public void One_Of_Works()
+    {
+      IRuleParser AlphabetParser()
+      {
+        return Starts
+          .With.The.Word("a")
+          .Then.The.Word("b")
+          .Then.The.Word("c")
+          .Then.The.Word("d")
+          .ReturnsNode("abcd");
+      }
+
+      IRuleParser AberahamParser()
+      {
+        return Starts
+          .With.The.Word("a")
+          .Then.The.Word("b")
+          .Then.The.Word("e")
+          .Then.The.Word("raham") // laziness
+          .ReturnsNode("aberaham");
+      }
+
+      string matchedText = null;
+      var oneOfParser = Starts.With.OneOf()
+        .A.Rule<string>(AlphabetParser(), t => matchedText = t)
+        .Or.A.Rule<string>(AberahamParser(), t => matchedText = t)
+        .ReturnsNode(matchedText);
+
+      string src = "a b e raham";
+      var tokens = new Lexer().ToTokens(src);
+      var result = oneOfParser.FeedAll(tokens);
+
+      var resultNode = result.AssertComplete<string>();
+      Assert.Equal("aberaham", matchedText);
+    }
+    public class TestNode
+    {
+      public string type;
+      public string name;
+      public List<TestNode> children = new List<TestNode>();
+    }
   }
 }
