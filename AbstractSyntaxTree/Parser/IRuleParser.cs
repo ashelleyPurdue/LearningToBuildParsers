@@ -19,5 +19,27 @@ namespace AbstractSyntaxTree.Parser
     /// Resets the parser to its initial state
     /// </summary>
     public void Reset();
+
+    /// <summary>
+    /// Feeds all of the tokens into the parser
+    /// Returns the final result.
+    /// Stops early and throws an error if any of the tokens yields a failed result.
+    /// </summary>
+    /// <param name="tokens"></param>
+    /// <returns></returns>
+    public RuleResult FeedAll(IEnumerable<Token> tokens)
+    {
+      RuleResult result = default;
+
+      foreach (Token t in tokens)
+      {
+        result = FeedToken(t);
+
+        if (result.status == RuleStatus.Failed)
+          throw result.error;
+      }
+
+      return result;
+    }
   }
 }
