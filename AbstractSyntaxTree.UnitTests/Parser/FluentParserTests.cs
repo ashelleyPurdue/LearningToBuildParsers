@@ -16,11 +16,11 @@ namespace AbstractSyntaxTree.UnitTests.Parser
     {
       string className = null;
 
-      var classParser = Starts.With()
-        .The.Keyword("class").Then()
-        .A.Word(name => className = name).Then()
-        .The.Symbol("{").Then()
-        .The.Symbol("}").Build();
+      var classParser = Starts.With().The.Keyword("class")
+        .Then().A.Word(name => className = name)
+        .Then().The.Symbol("{")
+        .Then().The.Symbol("}")
+        .Build();
 
       // Generate some tokens to parse with the parser we just made
       string src = "class FooBar {}";
