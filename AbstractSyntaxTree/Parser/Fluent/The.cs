@@ -16,7 +16,7 @@ namespace AbstractSyntaxTree.Parser.Fluent
         string errMsg = $"Expected the {type} \"{content}\", but got the {t.Type} \"{t.Content}\"";
         return RuleResult.Failed(t.Position, errMsg);
       });
-      return new RuleCallbackPair(rule, BlankCallback);
+      return new RuleCallbackPair(() => rule, BlankCallback);
 
       void BlankCallback(object node) { }
     }

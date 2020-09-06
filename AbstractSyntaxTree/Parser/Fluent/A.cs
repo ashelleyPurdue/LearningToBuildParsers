@@ -6,9 +6,9 @@ namespace AbstractSyntaxTree.Parser.Fluent
 {
   public static class A
   {
-    public static RuleCallbackPair Rule<TNode>(IRuleParser rule, Action<TNode> onMatched)
+    public static RuleCallbackPair Rule<TNode>(Func<IRuleParser> ruleFactory, Action<TNode> onMatched)
     {
-      return new RuleCallbackPair(rule, Wrapper);
+      return new RuleCallbackPair(ruleFactory, Wrapper);
 
       void Wrapper(object node)
       {
@@ -19,7 +19,7 @@ namespace AbstractSyntaxTree.Parser.Fluent
     public static RuleCallbackPair Token(Action<Token> onMatched)
     {
       var rule = new SingleTokenParser(t => RuleResult.Complete(t));
-      return new RuleCallbackPair(rule, Wrapper);
+      return new RuleCallbackPair(() => rule, Wrapper);
 
       void Wrapper(object node)
       {
@@ -37,7 +37,7 @@ namespace AbstractSyntaxTree.Parser.Fluent
         string errMsg = $"Expected a {type}, but got the {t.Type} \"{t.Content}\"";
         return RuleResult.Failed(t.Position, errMsg);
       });
-      return new RuleCallbackPair(rule, Wrapper);
+      return new RuleCallbackPair(() => rule, Wrapper);
 
       void Wrapper(object node)
       {

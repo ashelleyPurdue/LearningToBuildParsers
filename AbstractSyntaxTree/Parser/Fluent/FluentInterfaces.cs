@@ -19,7 +19,7 @@ namespace AbstractSyntaxTree.Parser.Fluent
     public RuleParserBuilder Then(params RuleCallbackPair[] rules)
     {
       foreach (var pair in rules)
-        _thenChain.AddRule(pair.rule, pair.onMatched);
+        _thenChain.AddRule(pair);
 
       return this;
     }
@@ -33,12 +33,12 @@ namespace AbstractSyntaxTree.Parser.Fluent
 
   public struct RuleCallbackPair
   {
-    public IRuleParser rule;
+    public Func<IRuleParser> ruleFactory;
     public Action<object> onMatched;
 
-    public RuleCallbackPair(IRuleParser rule, Action<object> onMatched)
+    public RuleCallbackPair(Func<IRuleParser> ruleFactory, Action<object> onMatched)
     {
-      this.rule = rule;
+      this.ruleFactory = ruleFactory;
       this.onMatched = onMatched;
     }
   }

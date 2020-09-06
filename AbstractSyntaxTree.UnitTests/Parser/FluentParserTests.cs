@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Linq;
@@ -62,7 +62,7 @@ namespace AbstractSyntaxTree.UnitTests.Parser
           The.Keyword("class"),
           A.Word(n => classDef.Name = n),
           The.Symbol("{"),
-          A.Rule<FunctionDefinition>(funcParser, f => classDef.Functions.Add(f)),
+          A.Rule<FunctionDefinition>(() => funcParser, classDef.Functions.Add),
           The.Symbol("}")
         )
         .ReturnsNode(classDef);

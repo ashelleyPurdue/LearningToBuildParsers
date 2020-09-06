@@ -10,9 +10,13 @@ namespace AbstractSyntaxTree.Parser.Fluent
     {
       var orParser = new OrParser();
       foreach (var pair in rules)
-        orParser.Or<object>(pair.rule, pair.onMatched);
+      {
+        // TODO: Make this happen lazily
+        var rule = pair.ruleFactory();
+        orParser.Or<object>(rule, pair.onMatched);
+      }
 
-      return new RuleCallbackPair(orParser, _ => { });
+      return new RuleCallbackPair(() => orParser, _ => { });
     }
   }
 }
