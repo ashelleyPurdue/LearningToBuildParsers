@@ -9,13 +9,17 @@ namespace AbstractSyntaxTree.Parser.Fluent
     public static IThen With() => throw new NotImplementedException();
   }
 
-  public interface IThen
+  public interface IThen : IATokenOptions<IThenA>
   {
-    IThenA A(IRuleParser rule);
-    IThenA AWord();
-    IThenA TheSymbol(string content);
-    IThenA TheKeyword(string content);
     IOneOf OneOf();
+  }
+
+  public interface IATokenOptions<TNextSyntax>
+  {
+    TNextSyntax A(IRuleParser rule);
+    TNextSyntax AWord();
+    TNextSyntax TheSymbol(string content);
+    TNextSyntax TheKeyword(string content);
   }
 
   public interface IThenA
@@ -34,10 +38,7 @@ namespace AbstractSyntaxTree.Parser.Fluent
     IOr Or();
   }
 
-  public interface IOr
-  {
-    IOrA A(IRuleParser rule);
-  }
+  public interface IOr : IATokenOptions<IOrA> { }
 
   public interface IOrA
   {
