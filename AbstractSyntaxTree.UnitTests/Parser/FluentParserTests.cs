@@ -14,10 +14,10 @@ namespace AbstractSyntaxTree.UnitTests.Parser
     public void You_Can_Express_An_Empty_Class()
     {
       var classParser = Starts.With()
-        .TheKeyword("class").Then()
-        .AWord().Then()
-        .TheSymbol("{").Then()
-        .TheSymbol("}").Build();
+        .The.Keyword("class").Then()
+        .A.Word().Then()
+        .The.Symbol("{").Then()
+        .The.Symbol("}").Build();
 
       string src = "class FooBar {}";
       var tokens = new Lexer().ToTokens(src);
