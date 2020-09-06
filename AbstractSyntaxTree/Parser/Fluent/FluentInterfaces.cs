@@ -33,6 +33,7 @@ namespace AbstractSyntaxTree.Parser.Fluent
   {
     TNextSyntax Token(TokenType type, string content);
 
+    TNextSyntax Word(string content) => Token(TokenType.Word, content);
     TNextSyntax Keyword(string content) => Token(TokenType.Keyword, content);
     TNextSyntax Symbol(string content) => Token(TokenType.Symbol, content);
   }
@@ -43,14 +44,11 @@ namespace AbstractSyntaxTree.Parser.Fluent
     IRuleParser ReturnsNode(object node);
   }
 
-  public interface IOneOf
-  {
-    IOneOfA A(IRuleParser rule);
-  }
+  public interface IOneOf : ITheAndA<IOneOfA> { }
 
   public interface IOneOfA
   {
-    IOr Or();
+    IOr Or { get; }
   }
 
   public interface IOr : ITheAndA<IOrA> { }
@@ -58,7 +56,7 @@ namespace AbstractSyntaxTree.Parser.Fluent
   public interface IOrA
   {
     IThen Then { get; }
-    IOr Or();
+    IOr Or { get; }
     IRuleParser ReturnsNode(object node);
   }
 }
