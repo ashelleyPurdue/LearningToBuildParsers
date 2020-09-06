@@ -12,6 +12,9 @@ namespace AbstractSyntaxTree.Parser.Fluent
   public interface IWith
   {
     IWithA A(IRuleParser rule);
+    IWithA AWord();
+    IWithA TheSymbol(string content);
+    IWithA TheKeyword(string content);
   }
 
   public interface IWithA
@@ -23,6 +26,9 @@ namespace AbstractSyntaxTree.Parser.Fluent
   public interface IThen
   {
     IThenA A(IRuleParser rule);
+    IThenA AWord();
+    IThenA TheSymbol(string content);
+    IThenA TheKeyword(string content);
     IOneOf OneOf();
   }
 
