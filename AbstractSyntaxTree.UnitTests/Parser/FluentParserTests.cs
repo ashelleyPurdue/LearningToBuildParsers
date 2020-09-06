@@ -25,11 +25,7 @@ namespace AbstractSyntaxTree.UnitTests.Parser
       // Generate some tokens to parse with the parser we just made
       string src = "class FooBar {}";
       var tokens = new Lexer().ToTokens(src);
-
-      // Parse them
-      RuleResult result = RuleResult.GoodSoFar();
-      foreach (var token in tokens)
-        result = classParser.FeedToken(token);
+      var result = classParser.FeedAll(tokens);
 
       // Assert that it correctly did stuff.
       result.AssertComplete();
@@ -66,11 +62,7 @@ namespace AbstractSyntaxTree.UnitTests.Parser
         }
       ";
       var tokens = new Lexer().ToTokens(src).ToArray();
-
-      // Parse them
-      RuleResult result = RuleResult.GoodSoFar();
-      foreach (var token in tokens)
-        result = classParser.FeedToken(token);
+      var result = classParser.FeedAll(tokens);
 
       // Assert that it correctly did stuff.
       result.AssertComplete();
