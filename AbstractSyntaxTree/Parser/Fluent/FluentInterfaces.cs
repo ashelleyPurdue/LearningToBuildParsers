@@ -11,7 +11,7 @@ namespace AbstractSyntaxTree.Parser.Fluent
 
   public interface IThen : ITheAndA<IThenA>
   {
-    IOneOf OneOf();
+    IOr OneOf();
   }
 
   public interface ITheAndA<TNextSyntax>
