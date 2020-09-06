@@ -10,6 +10,7 @@ namespace AbstractSyntaxTree.Parser.Fluent
       = new List<(IRuleParser rule, Action<object> callback)>();
 
     private int _currentRuleIndex = 0;
+    private bool _isFinished = false;
 
     public void AddRule(IRuleParser rule, Action<object> callback)
     {
@@ -18,6 +19,9 @@ namespace AbstractSyntaxTree.Parser.Fluent
 
     public RuleResult FeedToken(Token t)
     {
+      if (_isFinished)
+        throw new Exception("Tried to feed a token to an already-finished ThenChainParser.");
+
       var currentRule = _ruleSequence[_currentRuleIndex].rule;
       var currentCallabck = _ruleSequence[_currentRuleIndex].callback;
 
@@ -37,7 +41,10 @@ namespace AbstractSyntaxTree.Parser.Fluent
 
       // If the last rule just succeeded, the whole chain is complete.
       if (_currentRuleIndex >= _ruleSequence.Count)
+      {
+        _isFinished = true;
         return RuleResult.Complete(null); // TODO: Shit, where does node come from?
+      }
 
       return RuleResult.GoodSoFar();
     }
@@ -45,6 +52,7 @@ namespace AbstractSyntaxTree.Parser.Fluent
     public void Reset()
     {
       _currentRuleIndex = 0;
+      _isFinished = false;
 
       foreach (var rulePair in _ruleSequence)
         rulePair.rule.Reset();
