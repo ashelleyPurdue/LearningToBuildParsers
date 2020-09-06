@@ -33,7 +33,7 @@ namespace AbstractSyntaxTree.Parser.Fluent
       The = new ThenTheOptions(thenA);
     }
 
-    public IOneOf OneOf()
+    public IOr OneOf()
     {
       throw new NotImplementedException();
     }
