@@ -22,11 +22,11 @@ namespace AbstractSyntaxTree.Parser.Fluent
 
   public interface IAOptions<TNextSyntax>
   {
-    TNextSyntax Rule(IRuleParser rule);
-    TNextSyntax Token();
-    TNextSyntax Token(TokenType type);
+    TNextSyntax Rule<TNode>(IRuleParser rule, Action<TNode> onMatched);
+    TNextSyntax Token(Action<Token> onMatched);
+    TNextSyntax Token(TokenType type, Action<string> onMatched);
 
-    TNextSyntax Word() => Token(TokenType.Word);
+    TNextSyntax Word(Action<string> onMatched) => Token(TokenType.Word, onMatched);
   }
 
   public interface ITheOptions<TNextSyntax>
