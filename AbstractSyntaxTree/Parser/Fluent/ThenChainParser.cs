@@ -11,10 +11,16 @@ namespace AbstractSyntaxTree.Parser.Fluent
 
     private int _currentRuleIndex = 0;
     private bool _isFinished = false;
+    private object _node = null;
 
     public void AddRule(IRuleParser rule, Action<object> callback)
     {
       _ruleSequence.Add((rule, callback));
+    }
+
+    public void ReturnWhenComplete(object node)
+    {
+      _node = node;
     }
 
     public RuleResult FeedToken(Token t)
@@ -43,7 +49,7 @@ namespace AbstractSyntaxTree.Parser.Fluent
       if (_currentRuleIndex >= _ruleSequence.Count)
       {
         _isFinished = true;
-        return RuleResult.Complete(null); // TODO: Shit, where does node come from?
+        return RuleResult.Complete(_node);
       }
 
       return RuleResult.GoodSoFar();

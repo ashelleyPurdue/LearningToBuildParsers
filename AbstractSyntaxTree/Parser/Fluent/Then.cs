@@ -14,7 +14,11 @@ namespace AbstractSyntaxTree.Parser.Fluent
       Then = then;
     }
 
-    public IRuleParser Build() => Parser;
+    public IRuleParser ReturnsNode(object node)
+    {
+      Parser.ReturnWhenComplete(node);
+      return Parser;
+    }
   }
 
   public class Then : IThen

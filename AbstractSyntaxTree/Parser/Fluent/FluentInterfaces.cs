@@ -40,7 +40,7 @@ namespace AbstractSyntaxTree.Parser.Fluent
   public interface IThenA
   {
     IThen Then { get; }
-    IRuleParser Build();
+    IRuleParser ReturnsNode(object node);
   }
 
   public interface IOneOf
@@ -59,6 +59,6 @@ namespace AbstractSyntaxTree.Parser.Fluent
   {
     IThen Then { get; }
     IOr Or();
-    IRuleParser Build();
+    IRuleParser ReturnsNode(object node);
   }
 }
