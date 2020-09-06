@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Linq;
@@ -89,6 +89,35 @@ namespace AbstractSyntaxTree.UnitTests.Parser
     }
   
     [Fact]
+    public void It_Can_Handle_Recursive_Rules()
+    {
+      IRuleParser ListParser()
+      {
+        var list = new List<string>();
+        return Starts.With
+        (
+          A.Word(list.Add),
+          One.Of
+          (
+            The.Symbol("}"),
+            A.Rule<List<string>>(ListParser, rest => list.AddRange(rest))
+          )
+        ).ReturnsNode(list);
+      }
+
+      var parser = ListParser();
+      string src = "a b c d e f g}";
+      var tokens = new Lexer().ToTokens(src);
+
+      var resultList = parser
+        .FeedAll(tokens)
+        .AssertComplete<List<string>>();
+
+      var expectedList = new string[] { "a", "b", "c", "d", "e", "f", "g" };
+      Assert.Equal(expectedList, resultList);
+    }
+
+    [Fact]
     public void One_Of_Works()
     {
       IRuleParser AlphabetParser()
@@ -123,8 +152,8 @@ namespace AbstractSyntaxTree.UnitTests.Parser
         (
           One.Of
           (
-            A.Rule<string>(AlphabetParser(), t => node.name = t),
-            A.Rule<string>(AberahamParser(), t => node.name = t)
+            A.Rule<string>(AlphabetParser, t => node.name = t),
+            A.Rule<string>(AberahamParser, t => node.name = t)
           )
         )
         .ReturnsNode(node);
