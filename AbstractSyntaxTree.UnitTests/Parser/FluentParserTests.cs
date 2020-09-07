@@ -62,7 +62,7 @@ namespace AbstractSyntaxTree.UnitTests.Parser
           The.Keyword("class"),
           A.Word(n => classDef.Name = n),
           The.Symbol("{"),
-          A.Rule<FunctionDefinition>(funcParser, f => classDef.Functions.Add(f)),
+          A.Rule<FunctionDefinition>(() => funcParser, classDef.Functions.Add),
           The.Symbol("}")
         )
         .ReturnsNode(classDef);
@@ -88,6 +88,35 @@ namespace AbstractSyntaxTree.UnitTests.Parser
       Assert.Equal("DoThing", funcDef.Name);
     }
   
+    [Fact]
+    public void It_Can_Handle_Recursive_Rules()
+    {
+      IRuleParser ListParser()
+      {
+        var list = new List<string>();
+        return Starts.With
+        (
+          A.Word(list.Add),
+          One.Of
+          (
+            The.Symbol("}"),
+            A.Rule<List<string>>(ListParser, rest => list.AddRange(rest))
+          )
+        ).ReturnsNode(list);
+      }
+
+      var parser = ListParser();
+      string src = "a b c d e f g}";
+      var tokens = new Lexer().ToTokens(src);
+
+      var resultList = parser
+        .FeedAll(tokens)
+        .AssertComplete<List<string>>();
+
+      var expectedList = new string[] { "a", "b", "c", "d", "e", "f", "g" };
+      Assert.Equal(expectedList, resultList);
+    }
+
     [Fact]
     public void One_Of_Works()
     {
@@ -123,8 +152,8 @@ namespace AbstractSyntaxTree.UnitTests.Parser
         (
           One.Of
           (
-            A.Rule<string>(AlphabetParser(), t => node.name = t),
-            A.Rule<string>(AberahamParser(), t => node.name = t)
+            A.Rule<string>(AlphabetParser, t => node.name = t),
+            A.Rule<string>(AberahamParser, t => node.name = t)
           )
         )
         .ReturnsNode(node);
