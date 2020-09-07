@@ -87,7 +87,7 @@ namespace AbstractSyntaxTree.UnitTests.Parser
       Assert.Contains(funcDef, classDef.Functions);
       Assert.Equal("DoThing", funcDef.Name);
     }
-  
+
     [Fact]
     public void It_Can_Handle_Recursive_Rules()
     {

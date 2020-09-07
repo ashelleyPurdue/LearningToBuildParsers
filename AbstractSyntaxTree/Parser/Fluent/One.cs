@@ -8,13 +8,9 @@ namespace AbstractSyntaxTree.Parser.Fluent
   {
     public static RuleCallbackPair Of(params RuleCallbackPair[] rules)
     {
-      var orParser = new OrParser();
+      var orParser = new BacktrackingOrParser();
       foreach (var pair in rules)
-      {
-        // TODO: Make this happen lazily
-        var rule = pair.ruleFactory();
-        orParser.Or<object>(rule, pair.onMatched);
-      }
+        orParser.AddRule(pair);
 
       return new RuleCallbackPair(() => orParser, _ => { });
     }
