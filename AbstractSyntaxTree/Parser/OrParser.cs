@@ -3,23 +3,35 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
+using AbstractSyntaxTree.Parser.Fluent;
+
 namespace AbstractSyntaxTree.Parser
 {
   public class OrParser : IRuleParser
   {
-    private List<IRuleParser> _rules = new List<IRuleParser>();
+    private List<RuleCallbackPair> _addedRules = new List<RuleCallbackPair>();
     private List<IRuleParser> _remainingRules = new List<IRuleParser>();
 
     private Dictionary<IRuleParser, Action<object>> _ruleCallbacks
       = new Dictionary<IRuleParser, Action<object>>();
 
     private bool _isFinished = false;
+    private bool _isInitialized = false;
 
-    public OrParser Or<TNode>(IRuleParser rule, Action<TNode> onCompleted)
+    public OrParser AddRule(RuleCallbackPair rule)
     {
-      _rules.Add(rule);
-      _remainingRules.Add(rule);
-      _ruleCallbacks.Add(rule, CallbackWrapper);
+      _addedRules.Add(rule);
+      return this;
+    }
+
+    public OrParser Or<TNode>(Func<IRuleParser> ruleFactory, Action<TNode> onCompleted)
+    {
+      var pair = new RuleCallbackPair
+      {
+        ruleFactory = ruleFactory,
+        onMatched = CallbackWrapper
+      };
+      _addedRules.Add(pair);
 
       void CallbackWrapper(object uncastedNode)
       {
@@ -31,14 +43,27 @@ namespace AbstractSyntaxTree.Parser
 
     public OrParser Or<TNode>(RuleCoroutine coroutine, Action<TNode> onCompleted)
     {
-      var rule = new RuleCoroutineParser(coroutine);
-      return Or(rule, onCompleted);
+      return Or(() => new RuleCoroutineParser(coroutine), onCompleted);
+    }
+
+    private void Initialize()
+    {
+      // Instantiate all of the added rules, and
+      // register their callbacks.
+      foreach (var pair in _addedRules)
+      {
+        var rule = pair.ruleFactory();
+        _remainingRules.Add(rule);
+        _ruleCallbacks.Add(rule, pair.onMatched);
+      }
+      _isInitialized = true;
     }
 
     public RuleResult FeedToken(Token t)
     {
-      // TODO: Decide what the behavior should be when feeding a token
-      // to an already-finished rule.
+      if (!_isInitialized)
+        Initialize();
+
       if (_isFinished)
         throw new Exception("Tried to feed a token to an already-finished MultiRuleParser.");
 
@@ -102,13 +127,9 @@ namespace AbstractSyntaxTree.Parser
     public void Reset()
     {
       _isFinished = false;
+      _isInitialized = false;
       _remainingRules.Clear();
-
-      foreach (var rule in _rules)
-      {
-        rule.Reset();
-        _remainingRules.Add(rule);
-      }
+      _ruleCallbacks.Clear();
     }
   }
 }

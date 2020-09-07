@@ -20,9 +20,9 @@ namespace AbstractSyntaxTree.Parser
       _shouldKeepLooping = shouldKeepLooping;
     }
 
-    public WhileParser Or<TNode>(IRuleParser rule, Action<TNode> onCompleted)
+    public WhileParser Or<TNode>(Func<IRuleParser> ruleFactory, Action<TNode> onCompleted)
     {
-      _rules.Or<TNode>(rule, onCompleted);
+      _rules.Or<TNode>(ruleFactory, onCompleted);
       return this;
     }
 

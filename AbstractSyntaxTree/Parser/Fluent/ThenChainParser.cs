@@ -6,16 +6,16 @@ namespace AbstractSyntaxTree.Parser.Fluent
 {
   public class ThenChainParser : IRuleParser
   {
-    private List<(IRuleParser rule, Action<object> callback)> _ruleSequence
-      = new List<(IRuleParser rule, Action<object> callback)>();
+    private readonly List<RuleCallbackPair> _ruleSequence = new List<RuleCallbackPair>();
 
     private int _currentRuleIndex = 0;
+    private IRuleParser _currentRule = null;
     private bool _isFinished = false;
     private object _node = null;
 
-    public void AddRule(IRuleParser rule, Action<object> callback)
+    public void AddRule(RuleCallbackPair rule)
     {
-      _ruleSequence.Add((rule, callback));
+      _ruleSequence.Add(rule);
     }
 
     public void ReturnWhenComplete(object node)
@@ -28,11 +28,14 @@ namespace AbstractSyntaxTree.Parser.Fluent
       if (_isFinished)
         throw new Exception("Tried to feed a token to an already-finished ThenChainParser.");
 
-      var currentRule = _ruleSequence[_currentRuleIndex].rule;
-      var currentCallabck = _ruleSequence[_currentRuleIndex].callback;
+      var currentCallabck = _ruleSequence[_currentRuleIndex].onMatched;
+
+      // HACK: Create the first rule, if it hasn't been already.
+      if (_currentRule == null)
+        _currentRule = _ruleSequence[_currentRuleIndex].ruleFactory();
 
       // Feed the token to the current rule
-      var result = currentRule.FeedToken(t);
+      var result = _currentRule.FeedToken(t);
 
       // If it failed, cascade that failure upwards
       if (result.status == RuleStatus.Failed)
@@ -43,13 +46,14 @@ namespace AbstractSyntaxTree.Parser.Fluent
       {
         currentCallabck(result.node);
         _currentRuleIndex++;
-      }
 
-      // If the last rule just succeeded, the whole chain is complete.
-      if (_currentRuleIndex >= _ruleSequence.Count)
-      {
-        _isFinished = true;
-        return RuleResult.Complete(_node);
+        // If the last rule just succeeded, the whole chain is complete.
+        if (_currentRuleIndex >= _ruleSequence.Count)
+        {
+          _isFinished = true;
+          return RuleResult.Complete(_node);
+        }
+        _currentRule = _ruleSequence[_currentRuleIndex].ruleFactory();
       }
 
       return RuleResult.GoodSoFar();
@@ -58,10 +62,8 @@ namespace AbstractSyntaxTree.Parser.Fluent
     public void Reset()
     {
       _currentRuleIndex = 0;
+      _currentRule = _ruleSequence[0].ruleFactory();
       _isFinished = false;
-
-      foreach (var rulePair in _ruleSequence)
-        rulePair.rule.Reset();
     }
   }
 }
